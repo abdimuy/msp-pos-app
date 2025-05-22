@@ -1,41 +1,53 @@
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Button, TextInput } from "react-native";
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Button, TextInput, Alert } from "react-native";
 import { Link } from "expo-router";
 import { useState, useEffect } from "react";
-import api from "../api"; 
+import api from "../api";
 import fuzzysort from "fuzzysort";
 import { Ionicons } from '@expo/vector-icons';
+import { initDB, insertarProductos, obtenerProductos } from "../Database/database";
 
 export default function ListaProductos() {
   const [filtro, setFiltro] = useState('');
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const cargarProductos = async () => {
+  useEffect(() => {
+    const inicializar = async () => {
+      try {
+        initDB();
+        const datosLocales = obtenerProductos();
+        setProductos(datosLocales);
+      } catch (error) {
+        console.log("Error al inicializar la base de datos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    inicializar();
+  }, []);
+
+  const actualizarDatos = async () => {
     try {
+      setLoading(true);
       const respuesta = await api.get('/articulos');
-      console.log('Respuesta API:', respuesta.data);
-      setProductos(Array.isArray(respuesta.data.body) ? respuesta.data.body : []);
+      const nuevosProductos = Array.isArray(respuesta.data.body) ? respuesta.data.body : [];
+      insertarProductos(nuevosProductos);
+      setProductos(obtenerProductos());
+      Alert.alert("Éxito", "Los productos han sido actualizados.");
     } catch (error) {
-      console.log('Error al cargar productos:', error);
-      setProductos([]);
+      console.log("Error al actualizar productos:", error);
+      Alert.alert("Error", "No se pudieron actualizar los productos.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    cargarProductos();
-  }, []);
-
   const productosFiltrados = filtro
-    ? fuzzysort.go(filtro, productos.filter(p => p.EXISTENCIAS > 0), {
-        key: 'ARTICULO',
-      }).map(result => result.obj)
+    ? fuzzysort.go(filtro, productos.filter(p => p.EXISTENCIAS > 0), { key: 'ARTICULO' }).map(result => result.obj)
     : productos.filter(p => p.EXISTENCIAS > 0);
 
-  const renderItem = ({ item }: { item: any }) => (
-    <ProductoCard item={item} />
-  );
+  const renderItem = ({ item }: { item: any }) => <ProductoCard item={item} />;
 
   return (
     <View style={styles.contenedor}>
@@ -63,10 +75,10 @@ export default function ListaProductos() {
       <Link href="#" asChild>
         <Button title="Inicio" />
       </Link>
+      <Button title="Actualizar Datos" onPress={actualizarDatos} />
     </View>
   );
 }
-
 
 function ProductoCard({ item }: { item: any }) {
   const [errorCarga, setErrorCarga] = useState(false);
