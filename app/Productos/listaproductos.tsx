@@ -1,47 +1,19 @@
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Button, TextInput, Alert } from "react-native";
 import { Link } from "expo-router";
 import { useState, useEffect } from "react";
-import api from "../api";
 import fuzzysort from "fuzzysort";
 import { Ionicons } from '@expo/vector-icons';
-import { initDB, insertarProductos, obtenerProductos } from "../Database/database";
+import { useProductos } from "../Productos/useProducts";
 
 export default function ListaProductos() {
   const [filtro, setFiltro] = useState('');
-  const [productos, setProductos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { productos, loading, error, actualizarDatos } = useProductos();
 
   useEffect(() => {
-    const inicializar = async () => {
-      try {
-        initDB();
-        const datosLocales = obtenerProductos();
-        setProductos(datosLocales);
-      } catch (error) {
-        console.log("Error al inicializar la base de datos:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    inicializar();
-  }, []);
-
-  const actualizarDatos = async () => {
-    try {
-      setLoading(true);
-      const respuesta = await api.get('/articulos');
-      const nuevosProductos = Array.isArray(respuesta.data.body) ? respuesta.data.body : [];
-      insertarProductos(nuevosProductos);
-      setProductos(obtenerProductos());
-      Alert.alert("Éxito", "Los productos han sido actualizados.");
-    } catch (error) {
-      console.log("Error al actualizar productos:", error);
-      Alert.alert("Error", "No se pudieron actualizar los productos.");
-    } finally {
-      setLoading(false);
+    if (error) {
+      Alert.alert("Error", error);
     }
-  };
+  }, [error]);
 
   const productosFiltrados = filtro
     ? fuzzysort.go(filtro, productos.filter(p => p.EXISTENCIAS > 0), { key: 'ARTICULO' }).map(result => result.obj)
@@ -162,5 +134,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '400',
     color: '#0056B3',
-  },
+  }
 });
