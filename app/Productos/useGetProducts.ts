@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import { initDB, insertarProductos, obtenerProductos } from "../Database/database";
 import api from "../api";
+import { Producto } from "../../Types/Producto";
+
+
 
 export function useProductos() {
-  const [productos, setProductos] = useState<any[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const cargarProductos = async () => {
     try {
       setLoading(true);
-      await initDB();
       const datosLocales = await obtenerProductos();
       setProductos(datosLocales);
       setError(null);

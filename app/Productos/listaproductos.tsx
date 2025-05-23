@@ -1,13 +1,15 @@
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Button, TextInput, Alert } from "react-native";
+import { View, Text, FlatList, Image, TouchableOpacity, Button, TextInput, Alert } from "react-native";
 import { Link } from "expo-router";
 import { useState, useEffect } from "react";
 import fuzzysort from "fuzzysort";
 import { Ionicons } from '@expo/vector-icons';
-import { useProductos } from "../Productos/useProducts";
+import { useProductos } from "./useGetProducts";
+import { Producto } from "../../Types/Producto";
+import { styles } from "../Productos/ListaProductos.styles";
 
 export default function ListaProductos() {
   const [filtro, setFiltro] = useState('');
-  const { productos, loading, error, actualizarDatos } = useProductos();
+  const { productos, loading, error } = useProductos();
 
   useEffect(() => {
     if (error) {
@@ -19,7 +21,7 @@ export default function ListaProductos() {
     ? fuzzysort.go(filtro, productos.filter(p => p.EXISTENCIAS > 0), { key: 'ARTICULO' }).map(result => result.obj)
     : productos.filter(p => p.EXISTENCIAS > 0);
 
-  const renderItem = ({ item }: { item: any }) => <ProductoCard item={item} />;
+  const renderItem = ({ item }: { item: Producto }) => <ProductoCard item={item} />;
 
   return (
     <View style={styles.contenedor}>
@@ -47,12 +49,11 @@ export default function ListaProductos() {
       <Link href="#" asChild>
         <Button title="Inicio" />
       </Link>
-      <Button title="Actualizar Datos" onPress={actualizarDatos} />
     </View>
   );
 }
 
-function ProductoCard({ item }: { item: any }) {
+function ProductoCard({ item }: { item: Producto }) {
   const [errorCarga, setErrorCarga] = useState(false);
 
   return (
@@ -78,61 +79,3 @@ function ProductoCard({ item }: { item: any }) {
   );
 }
 
-const styles = StyleSheet.create({
-  contenedor: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-  },
-  header: {
-    textAlign: 'center',
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#003366',
-    paddingVertical: 12,
-  },
-  inputFiltro: {
-    height: 40,
-    borderColor: '#003366',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 12,
-  },
-  lista: {
-    paddingBottom: 16,
-    paddingTop: 16,
-  },
-  card: {
-    height: 96,
-    flexDirection: 'row',
-    backgroundColor: '#F8FAFC',
-    borderColor: '#E2E8F0',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 12,
-    alignItems: 'center',
-    padding: 8,
-  },
-  imagen: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    backgroundColor: '#CBD5E1',
-  },
-  info: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: 'center',
-  },
-  nombre: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#003366',
-  },
-  stock: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: '#0056B3',
-  }
-});

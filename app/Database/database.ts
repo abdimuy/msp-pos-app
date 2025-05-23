@@ -1,11 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-
-type Producto = {
-  ARTICULO_ID: number;
-  ARTICULO: string;
-  EXISTENCIAS: number;
-  PRECIO: number;
-};
+import { Producto } from "../../Types/Producto";
 
 let db: SQLite.SQLiteDatabase;
 
@@ -21,7 +15,6 @@ export const initDB = async (): Promise<void> => {
         PRECIO REAL NOT NULL
       );
     `);
-    console.log('Base de datos inicializada.');
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
     console.error('ERROR CRÍTICO: Fallo al inicializar la DB');
@@ -30,25 +23,27 @@ export const initDB = async (): Promise<void> => {
 
 export const insertarProductos = async (productos: Producto[]): Promise<void> => {
   try {
+    await db.runAsync('DELETE FROM productos;');
     let insertados = 0;
     for (const p of productos) {
       await db.runAsync(
-        `INSERT OR REPLACE INTO productos 
+        `INSERT INTO productos 
          (ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO) 
          VALUES (?, ?, ?, ?);`,
         [p.ARTICULO_ID, p.ARTICULO, p.EXISTENCIAS, p.PRECIO]
       );
       insertados++;
     }
-    console.log(`${insertados} productos insertados o actualizados.`);
+    console.log(`${insertados} productos insertados.`);
   } catch (error) {
-    console.error('Error al insertar o actualizar productos:', error);
+    console.error('Error al insertar productos:', error);
   }
 };
 
+
 export const obtenerProductos = async (): Promise<Producto[]> => {
   try {
-    const resultados = await db.getAllAsync<Producto>('SELECT * FROM productos;');
+    const resultados = await db.getAllAsync<Producto>(`SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;`);
     console.log(`Recuperados ${resultados.length} productos.`);
     return resultados;
   } catch (error) {
@@ -56,3 +51,5 @@ export const obtenerProductos = async (): Promise<Producto[]> => {
     return [];
   }
 };
+
+
