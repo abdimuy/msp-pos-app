@@ -1,5 +1,7 @@
-import { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { createContext, useContext, useReducer, ReactNode, useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { signInWithEmailAndPassword, signOut, getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { auth } from '../../src/config/firebaseConfig'
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -28,7 +30,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 
 const AuthContext = createContext<{
   state: AuthState;
-  login: (user: User) => void;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
 } | undefined>(undefined);
@@ -36,22 +38,35 @@ const AuthContext = createContext<{
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const [isLoading, setIsLoading] = useState(true);
-  const auth = getAuth();
 
-  const login = (user: User) => {
-    dispatch({ type: 'LOGIN', payload: user });
+  const login = async (email: string, password: string) => {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        await AsyncStorage.setItem('user', JSON.stringify(user));
+        dispatch({ type: 'LOGIN', payload: user });
+    } catch (error: any) {
+      console.error('Error al iniciar sesión:', error.message);
+      throw new Error(error.message); // para manejarlo desde la interfaz si quieres
+    }
   };
 
   const logout = async () => {
     await signOut(auth);
+    await AsyncStorage.removeItem('user');
     dispatch({ type: 'LOGOUT' });
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const auth = getAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        login(user);
+        // Guardar usuario en AsyncStorage 
+        await AsyncStorage.setItem('user', JSON.stringify(user));
+        dispatch({ type: 'LOGIN', payload: user });
       } else {
+        await AsyncStorage.removeItem('user');
         dispatch({ type: 'LOGOUT' });
       }
       setIsLoading(false);

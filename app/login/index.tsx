@@ -1,9 +1,7 @@
 import React, {useState} from "react"; 
-import { View, TextInput, StyleSheet, Image, TouchableOpacity, Text, Pressable, Button, } from 'react-native';
+import { View, TextInput, Image, TouchableOpacity, Text, Pressable, Button, } from 'react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../src/config/firebaseConfig'
 import { styles } from './_login.styles'
 
 export default function LoginScreen() {
@@ -27,11 +25,9 @@ export default function LoginScreen() {
   const handlePress = async() => {
     if (!isDisabled && esEmailValido(email)) {
       try {
-        const userCredential = await signInWithEmailAndPassword(auth , email, password);
-        const user = userCredential.user;
         
-        login(user);
-        router.replace('/login/(tabs)/sales/newSales');
+        await login(email, password);
+        router.replace('/');
         console.log(email,password);
 
       } catch (error) {

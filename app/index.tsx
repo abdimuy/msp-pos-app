@@ -14,8 +14,4 @@ export default function Home() {
       </View>
     );
   }
-
-  return (
-    <Redirect href={state.isAuthenticated ? '/(tabs)/sales/newSales' : '/login'} />
-  );
 }
