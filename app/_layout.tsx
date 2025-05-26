@@ -1,7 +1,8 @@
 import { Slot } from 'expo-router';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { AuthProvider } from '../src/context/AuthContext'; // ajusta la ruta según tu proyecto
+import { AuthProvider } from '../src/context/AuthContext'; 
 import { useEffect, useState } from 'react'; 
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import { initDB } from '../app/Database/database';
 
 export default function RootLayout() {
@@ -23,6 +24,20 @@ export default function RootLayout() {
     inicializarBaseDeDatos();
   }, []);
 
+  if (errorInitializingDb) {
+  return (
+    <SafeAreaView style={styles.centered}>
+    </SafeAreaView>
+  );
+}
+
+  if (!dbInitialized) {
+    return (
+    <SafeAreaView style={styles.centered}>
+      <ActivityIndicator size="large" />
+    </SafeAreaView>);
+  }
+
   return (
     <AuthProvider>
       <SafeAreaProvider>
@@ -33,3 +48,15 @@ export default function RootLayout() {
     </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  centered: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+  },
+});
