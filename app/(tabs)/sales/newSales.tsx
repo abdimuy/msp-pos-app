@@ -4,8 +4,8 @@ import * as ImagePicker from 'expo-image-picker';
 import {
   View,
   Text,
-  TextInput,
   Button,
+  TextInput,
   TouchableOpacity,
   ScrollView,
   Image,
@@ -15,6 +15,8 @@ import {
 import { Feather, AntDesign, Entypo } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
 import { styles } from '../sales/_newSales.styles'
+import { Boton } from '../../../Componentes/Boton/boton';
+import { Link } from 'expo-router';
 
 
 export default function RegistrarCliente() {
@@ -26,6 +28,8 @@ export default function RegistrarCliente() {
   const [facing, setFacing] = useState<CameraType>('back');
   const cameraRef = useRef<CameraView | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
+ const [isLoading, setIsLoading] = useState(false);
+
 
   const nombreInvalido = nombreTocado && nombre.trim() === '';
 
@@ -71,6 +75,15 @@ export default function RegistrarCliente() {
       </View>
     );
   }
+
+  const handleSiguiente = async () => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    console.log('Cliente:', nombre);
+    console.log('Fotos:', fotosUris);
+    setIsLoading(false);
+  };
+
 
   return (
     <KeyboardAvoidingView
@@ -138,16 +151,19 @@ export default function RegistrarCliente() {
 
           {/* BOTÓN SIGUIENTE */}
           <View style={styles.contenedor}>
-            <TouchableOpacity
-              style={[styles.nextButton, nombre.trim() === '' ? styles.nextButtonDisabled : null]}
-              disabled={nombre.trim() === ''}
-              onPress={() => {
-                // Acción para siguiente
-                console.log('Cliente:', nombre);
-                console.log('Fotos:', fotosUris);
-              }}>
-              <Text style={styles.nextButtonText}>SIGUIENTE</Text>
-            </TouchableOpacity>
+            <Boton
+              onPress={handleSiguiente}
+              disabled={nombre.trim() === '' || isLoading}
+              loading={isLoading}
+              label="SIGUIENTE"
+              variant="primary"
+              size="large"
+            />
+            
+            <Link href="/" asChild>
+              <Button title="Atrás" onPress={() => {}} />
+            </Link>
+
           </View>
         </ScrollView>
       )}

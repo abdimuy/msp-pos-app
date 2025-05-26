@@ -3,11 +3,14 @@ import { View, TextInput, Image, TouchableOpacity, Text, Pressable, Button, } fr
 import { useAuth } from '../../src/context/AuthContext';
 import { useRouter } from 'expo-router';
 import { styles } from './_login.styles'
+import { Boton } from '../../Componentes/Boton/boton';
+
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Valora si los campos de email y password estan vacios
   const isDisabled = email.trim()==='' || password.trim()=== '';
@@ -22,20 +25,22 @@ export default function LoginScreen() {
   const router = useRouter();
 
   //Funcion par el inicio de sesión
-  const handlePress = async() => {
-    if (!isDisabled && esEmailValido(email)) {
-      try {
-        
-        await login(email, password);
-        router.replace('/index');
-        console.log(email,password);
-
-      } catch (error) {
-        alert('Correo o contraseña incorrectos');
-        console.log(email,password);
-      }
+  const handlePress = async () => {
+  if (!isDisabled && esEmailValido(email)) {
+    try {
+      setIsLoading(true); // activa el spinner
+      await login(email, password);
+      router.replace('/');
+      console.log(email, password);
+    } catch (error) {
+      alert('Correo o contraseña incorrectos');
+      console.log(email, password);
+    } finally {
+      setIsLoading(false); // desactiva el spinner
     }
-  };
+  }
+};
+
 
   // Funcion para asegurar que el usuario ingrese un correo
    const esEmailValido = (correo:string): boolean => {
@@ -94,25 +99,16 @@ export default function LoginScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Botón */}
-      <Pressable
-        onPressIn={() => setIsPressed(true)}
-        onPressOut={() => setIsPressed(false)}
-
+      <Boton
         onPress={handlePress}
-        disabled={isDisabled}
-        
-        style={[
-          styles.button,
-          isDisabled
-            ? styles.buttonDisabled
-            : isPressed
-            ? styles.buttonPressed
-            : styles.buttonEnabled,
-        ]}
-      >
-        <Text style={styles.buttonText}>INICIAR SESIÓN</Text>
-      </Pressable>
+        label="INICIAR SESIÓN"
+        disabled={isDisabled || isLoading}
+        loading={isLoading}
+        variant="primary"
+        size="large"
+        style={{ marginTop: 20 }}
+      />
+
 
     </View>
   );
