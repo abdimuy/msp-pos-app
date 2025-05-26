@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 import React from 'react';
-import { Text, View, ActivityIndicator } from 'react-native';
+import { Text, View, ActivityIndicator, } from 'react-native';
 import { useAuth } from '../src/context/AuthContext';
 
 export default function Home() {
@@ -9,9 +9,14 @@ export default function Home() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="small" />
         <Text>Cargando...</Text>
       </View>
     );
   }
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Pantalla de inicio</Text>
+    </View>
+  );
 }

@@ -27,7 +27,7 @@ export default function LoginScreen() {
       try {
         
         await login(email, password);
-        router.replace('/');
+        router.replace('/index');
         console.log(email,password);
 
       } catch (error) {

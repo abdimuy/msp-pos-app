@@ -2,7 +2,8 @@
 
 import Constants from 'expo-constants';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { initializeAuth, getReactNativePersistence, getAuth, Auth } from 'firebase/auth';
+// @ts-ignore
+import { initializeAuth, getReactNativePersistence , getAuth, Auth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { firebase } = Constants.expoConfig?.extra!;

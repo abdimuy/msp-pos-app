@@ -1,5 +1,5 @@
 import { Slot, useRouter } from 'expo-router';
-import { useAuth } from '../../../src/context/AuthContext';
+import { useAuth } from '../../src/context/AuthContext';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { useEffect } from 'react';
 
