@@ -33,7 +33,7 @@ export const initDB = async (): Promise<void> => {
     `);
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
-    throw error; // permite que layout lo capture
+    throw error;
   }
 };
 
@@ -56,9 +56,8 @@ export const insertarProductos = async (productos: Producto[]): Promise<void> =>
         [p.ARTICULO_ID, p.ARTICULO, p.EXISTENCIAS, p.PRECIO]
       );
     }
-    console.log(`${productos.length} productos insertados.`);
   } catch (error) {
-    console.error('Error al insertar productos:', error);
+    console.error(error);
   }
 };
 
@@ -68,10 +67,9 @@ export const obtenerProductos = async (): Promise<Producto[]> => {
     const resultados = await database.getAllAsync<Producto>(
       `SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;`
     );
-    console.log(`Recuperados ${resultados.length} productos.`);
     return resultados;
   } catch (error) {
-    console.error('Error al obtener productos:', error);
+    console.error(error);
     return [];
   }
 };
@@ -93,16 +91,17 @@ export const insertarVenta = async (venta: Sale): Promise<void> => {
         [saleId, img.url]
       );
     }
-    console.log('Venta insertada con ID', saleId);
   } catch (error) {
-    console.error('Error al insertar venta:', error);
+    console.error(error);
   }
 };
 
-//Obtiene la informacion de las ventas que ya se han sincronizado
 export const obtenerVentas = async (): Promise<Sale[]> => {
   try {
-    const ventasBase = await db.getAllAsync<any>(`SELECT * FROM sale;`);
+    const ventasBase = await db.getAllAsync<Sale>(
+      `SELECT id, name, date, status FROM sale;`
+    );
+
     for (const venta of ventasBase) {
       const imagenes = await db.getAllAsync<{ url: string }>(
         `SELECT url FROM sale_images WHERE sale_id = ?;`,
@@ -110,19 +109,20 @@ export const obtenerVentas = async (): Promise<Sale[]> => {
       );
       venta.images = imagenes.map(img => ({ url: img.url }));
     }
+
     return ventasBase;
   } catch (error) {
-    console.error('Error al obtener ventas:', error);
+    console.error(error);
     return [];
   }
 };
 
+
 //Elimina la Venta realizada, asi como sus datos(Esto incluye imagenes)
-export const eliminarVenta = async (saleId: number): Promise<void> => {
+export const eliminarTodasLasVentas = async (): Promise<void> => {
   try {
-    await db.runAsync(`DELETE FROM sale WHERE id = ?;`, [saleId]);
-    console.log('Venta eliminada:', saleId);
+    await db.runAsync(`DELETE FROM sqlite_sequence WHERE name='sale';`);
   } catch (error) {
-    console.error('Error al eliminar venta:', error);
+    console.error(error);
   }
 };
