@@ -46,8 +46,8 @@ export default function ListaProductos() {
         />
       )}
 
-      <Link href="#" asChild>
-        <Button title="Inicio" />
+      <Link href="/" asChild>
+        <Button title="Atrás" />
       </Link>
     </View>
   );
