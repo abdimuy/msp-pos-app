@@ -1,5 +1,5 @@
 export interface Sale {
-  id?: number;
+  id: string;
   name: string;
   date: string; 
   status: number; // 0 o 1

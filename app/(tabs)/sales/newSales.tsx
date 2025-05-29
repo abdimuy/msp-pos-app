@@ -19,6 +19,7 @@ import { Boton } from '../../../Componentes/Boton/boton';
 import { Link, useRouter } from 'expo-router';
 import { Sale } from 'Types/sales'
 import { insertarVenta } from 'app/Database/database';
+import uuid from 'react-native-uuid'
 
 export default function RegistrarCliente() {
   const [nombre, setNombre] = useState('');
@@ -81,6 +82,7 @@ export default function RegistrarCliente() {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
     const nuevaVenta: Sale = {
+      id: uuid.v4(),
       name: nombre,
       date: new Date().toISOString(),
       status: 0,

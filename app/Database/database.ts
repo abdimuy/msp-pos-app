@@ -5,7 +5,7 @@ import { UrlObject } from 'expo-router/build/global-state/routeInfo';
 
 let db: SQLite.SQLiteDatabase;
 
-type SaleConId = Omit<Sale, 'id'> & { id: number };
+
 
 export const initDB = async (): Promise<void> => {
   try {
@@ -100,9 +100,9 @@ export const insertarVenta = async (venta: Sale): Promise<void> => {
   }
 };
 
-export const obtenerVentas = async (): Promise<SaleConId[]> => {
+export const obtenerVentas = async (): Promise<Sale[]> => {
   try {
-    const ventasBase = await db.getAllAsync<SaleConId>(
+    const ventasBase = await db.getAllAsync<Sale>(
       `SELECT id, name, date, status FROM sale;`
     );
 
@@ -121,11 +121,11 @@ export const obtenerVentas = async (): Promise<SaleConId[]> => {
   }
 };
 
-export const obtenerDetallesVenta = async (id: number): Promise<SaleConId | null> => {
+export const obtenerDetallesVenta = async (id: number): Promise<Sale | null> => {
   try {
     const db = getDB();
 
-    const detalles = await db.getFirstAsync<SaleConId>(
+    const detalles = await db.getFirstAsync<Sale>(
       `SELECT id, name, date, status FROM sale WHERE id = ?`,
       [id]
     );
