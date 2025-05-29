@@ -42,10 +42,13 @@ export default function Home() {
         <Boton label="Nueva venta" onPress={() => {}} />
       </Link>
 
+      <Link href="/(tabs)/listaVentas/listSale" asChild>
+        <Boton label="Lista de ventas" onPress={() => {}} />
+      </Link>
+
       <Link href="/Productos/listaproductos" asChild>
         <Boton label="Ver Productos" onPress={() => {}} />
       </Link>
-
 
       <Boton
         label="Actualizar Datos"

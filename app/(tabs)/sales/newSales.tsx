@@ -16,8 +16,9 @@ import { Feather, AntDesign, Entypo } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
 import { styles } from '../sales/_newSales.styles'
 import { Boton } from '../../../Componentes/Boton/boton';
-import { Link } from 'expo-router';
-
+import { Link, useRouter } from 'expo-router';
+import { Sale } from 'Types/sales'
+import { insertarVenta } from 'app/Database/database';
 
 export default function RegistrarCliente() {
   const [nombre, setNombre] = useState('');
@@ -28,8 +29,8 @@ export default function RegistrarCliente() {
   const [facing, setFacing] = useState<CameraType>('back');
   const cameraRef = useRef<CameraView | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
- const [isLoading, setIsLoading] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const nombreInvalido = nombreTocado && nombre.trim() === '';
 
@@ -79,9 +80,17 @@ export default function RegistrarCliente() {
   const handleSiguiente = async () => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Cliente:', nombre);
-    console.log('Fotos:', fotosUris);
+    const nuevaVenta: Sale = {
+      name: nombre,
+      date: new Date().toISOString(),
+      status: 0,
+      images: fotosUris.map(url => ({ url })),
+    };
+    await insertarVenta(nuevaVenta);
+    setNombre('');
+    setFotosUris([]);
     setIsLoading(false);
+    router.replace('/(tabs)/listaVentas/listSale')
   };
 
 
