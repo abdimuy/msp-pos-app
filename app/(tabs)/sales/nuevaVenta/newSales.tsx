@@ -14,8 +14,8 @@ import {
 } from 'react-native';
 import { Feather, AntDesign, Entypo } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
-import { styles } from '../sales/_newSales.styles'
-import { Boton } from '../../../Componentes/Boton/boton';
+import { styles } from './_newSales.styles'
+import { Boton } from '../../../../Componentes/Boton/boton';
 import { Link, useRouter } from 'expo-router';
 import { Sale } from 'Types/sales'
 import { insertarVenta } from 'app/Database/database';
@@ -92,7 +92,7 @@ export default function RegistrarCliente() {
     setNombre('');
     setFotosUris([]);
     setIsLoading(false);
-    router.replace('/(tabs)/listaVentas/listSale')
+    router.replace('/(tabs)/sales/listaVentas/listSale')
   };
 
 

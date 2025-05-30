@@ -1,25 +1,15 @@
-import { useLocalSearchParams } from "expo-router";
-import {useEffect , useState} from "react";
 import { Text, ScrollView, Image, View } from "react-native";
-import { Sale } from '../../../Types/sales'
-import { obtenerDetallesVenta } from "app/Database/database";
-import { styles } from './_listSale.styles'
+import { styles } from '../listaVentas/_listSale.styles'
+import { useVenta } from "./useVenta";
 
 export default function detallesDeVentas() {
-    const { id } = useLocalSearchParams();
-    const [venta, setVenta] = useState<Sale | null>(null);
+    const {venta , loading, error} = useVenta();    
 
-    useEffect(() => {
-        if (id) {
-            obtenerDetallesVenta(Number(id)).then((data) => {
-                setVenta(data);
-            });
-        }
-    }, [id]);
-
-    if (!venta) {
-        return <Text>Cargando...</Text>;
+    if (loading || !venta) {
+      return <Text>Cargando...</Text>;
     }
+
+    if (error) return <Text>Error:{error}</Text>
 
     return (
       <View>
