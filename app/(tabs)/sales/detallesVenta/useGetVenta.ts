@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { obtenerDetallesVenta } from "app/Database/database";
 import { Sale } from "../../../../Types/sales"; 
 
-export function useVenta() {
+export function useGetVenta() {
   const { id } = useLocalSearchParams();
   const [venta, setVenta] = useState<Sale | null>(null);
   const [loading, setLoading] = useState(true);

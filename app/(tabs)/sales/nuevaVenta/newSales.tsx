@@ -80,7 +80,6 @@ export default function RegistrarCliente() {
 
   const handleSiguiente = async () => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
     const nuevaVenta: Sale = {
       id: uuid.v4(),
       name: nombre,

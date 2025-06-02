@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { obtenerVentas } from 'app/Database/database';
 import { Sale } from '../../../../Types/sales'; // Ajusta si tu ruta es diferente
 
-export function useListaVentas() {
+export function useGetListVentas() {
   const [listaVentas, setListaVentas] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

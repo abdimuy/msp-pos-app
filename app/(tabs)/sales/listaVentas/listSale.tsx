@@ -1,10 +1,10 @@
 import { Text, View, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { styles } from './_listSale.styles';
 import { useRouter } from 'expo-router';
-import { useListaVentas } from './useListaVentas';
+import { useGetListVentas } from './useGetListVentas';
 
 export default function listaVentas() {
-  const {listaVentas, loading, error}= useListaVentas();
+  const {listaVentas, loading, error}= useGetListVentas();
 
   const router = useRouter();
 

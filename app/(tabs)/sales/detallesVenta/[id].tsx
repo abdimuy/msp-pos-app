@@ -1,15 +1,17 @@
 import { Text, ScrollView, Image, View } from "react-native";
 import { styles } from '../listaVentas/_listSale.styles'
-import { useVenta } from "./useVenta";
+import { useGetVenta } from "./useGetVenta";
 
 export default function detallesDeVentas() {
-    const {venta , loading, error} = useVenta();    
+    const {venta , loading, error} = useGetVenta();    
 
-    if (loading || !venta) {
+    if (loading) {
       return <Text>Cargando...</Text>;
     }
 
     if (error) return <Text>Error:{error}</Text>
+
+    if (!venta) return <Text>No se encontro ninguna venta...</Text>
 
     return (
       <View>
@@ -22,7 +24,7 @@ export default function detallesDeVentas() {
               timeStyle: 'short',
             }).format(new Date(venta.date))}hrs
           </Text>
-          <Text>Estado: {venta.status === 1 ? 'Completado' : 'Pendiente'}</Text>
+          <Text>Estado: {venta.status === 1 ? 'Enviado' : 'Pendiente'}</Text>
           <Text style={styles.subtitulos}>Imágenes:</Text>
           {venta.images?.map((img, index) => (
             <Image
