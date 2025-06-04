@@ -1,27 +1,39 @@
 import * as SQLite from 'expo-sqlite';
-import { Producto } from "../../Types/Producto";
+import { Producto } from '../../Types/Producto';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
 export const initDB = async (): Promise<void> => {
   try {
     db = await SQLite.openDatabaseAsync('productos.db');
+
     await db.execAsync(`
       PRAGMA journal_mode = WAL;
       CREATE TABLE IF NOT EXISTS productos (
         ARTICULO_ID INTEGER PRIMARY KEY NOT NULL,
-        ARTICULO TEXT NOT NULL,
+        ARTICULO TEXT NOT NULL, 
         EXISTENCIAS INTEGER NOT NULL,
         PRECIO REAL NOT NULL
       );
     `);
+
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS imagenes (
+        imagen_id INTEGER PRIMARY KEY,
+        articulo_id INTEGER NOT NULL,
+        ruta_local TEXT NOT NULL UNIQUE,
+        FOREIGN KEY (articulo_id) REFERENCES productos(ARTICULO_ID)
+      );
+    `);
+
+    console.log('Base de datos inicializada correctamente.');
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
-    throw error; // permite que layout lo capture
+    throw error;
   }
 };
 
-const getDB = (): SQLite.SQLiteDatabase => {
+export const getDB = (): SQLite.SQLiteDatabase => {
   if (!db) {
     throw new Error('La base de datos no está inicializada. Llama a initDB() primero.');
   }
@@ -50,7 +62,18 @@ export const obtenerProductos = async (): Promise<Producto[]> => {
   try {
     const database = getDB();
     const resultados = await database.getAllAsync<Producto>(
-      `SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;`
+      `SELECT 
+        p.ARTICULO_ID, 
+        p.ARTICULO, 
+        p.EXISTENCIAS, 
+        p.PRECIO,
+        (
+          SELECT ruta_local 
+          FROM imagenes i 
+          WHERE i.articulo_id = p.ARTICULO_ID 
+          LIMIT 1
+        ) AS imagenRuta
+      FROM productos p;`
     );
     console.log(`Recuperados ${resultados.length} productos.`);
     return resultados;
@@ -59,3 +82,73 @@ export const obtenerProductos = async (): Promise<Producto[]> => {
     return [];
   }
 };
+
+type ImagenConId = {
+  imagen_id: number;
+  ruta_local: string;
+};
+
+//Inserta en la tabla imagenes las rutas locales de las imágenes asociadas a un producto
+export const insertarRutasImagenesSiNoExisten = async (
+  articulo_id: number,
+  imagenes: ImagenConId[]
+): Promise<void> => {
+  try {
+    const database = getDB();
+
+    let nuevas = 0;
+
+    for (const { imagen_id, ruta_local } of imagenes) {
+      const existente = await database.getFirstAsync<{ imagen_id: number }>(
+        `SELECT imagen_id FROM imagenes WHERE imagen_id = ?;`,
+        [imagen_id]
+      );
+
+      if (!existente) {
+        await database.runAsync(
+          `INSERT INTO imagenes (imagen_id, articulo_id, ruta_local) VALUES (?, ?, ?);`,
+          [imagen_id, articulo_id, ruta_local]
+        );
+        nuevas++;
+      }
+    }
+
+    console.log(`Se insertaron ${nuevas} imágenes nuevas para el producto ${articulo_id}`);
+  } catch (error) {
+    console.error('Error al insertar rutas de imágenes:', error);
+  }
+};
+
+//Consulta en la tabla y devuelve un array con las rutas locales
+export const obtenerRutasImagenesPorArticulo = async (articulo_id: number): Promise<string[]> => {
+  try {
+    const database = getDB();
+    const resultados = await database.getAllAsync<{ ruta_local: string }>(
+      `SELECT ruta_local FROM imagenes WHERE articulo_id = ?;`,
+      [articulo_id]
+    );
+    return resultados.map((r) => r.ruta_local);
+  } catch (error) {
+    console.error('Error al obtener rutas de imágenes:', error);
+    return [];
+  }
+};
+
+export async function obtenerProductoPorId(id: number): Promise<Producto | null> {
+  try {
+    const database = getDB();
+    const result = await database.getAllAsync<Producto>(
+      'SELECT * FROM productos WHERE ARTICULO_ID = ?',
+      [id]
+    );
+
+    if (result.length > 0) {
+      return result[0];
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Error al obtener producto por ID:', error);
+    return null;
+  }
+}

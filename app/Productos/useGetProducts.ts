@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
-import { initDB, insertarProductos, obtenerProductos } from "../Database/database";
-import api from "../api";
-import { Producto } from "../../Types/Producto";
-
-
+import { useState, useEffect } from 'react';
+import { insertarProductos, obtenerProductos } from '../Database/database';
+import api from '../api';
+import { Producto } from '../../Types/Producto';
 
 export function useProductos() {
   const [productos, setProductos] = useState<Producto[]>([]);
@@ -17,7 +15,7 @@ export function useProductos() {
       setProductos(datosLocales);
       setError(null);
     } catch (err: any) {
-      setError(err.message || "Error al cargar productos");
+      setError(err.message || 'Error al cargar productos');
     } finally {
       setLoading(false);
     }
@@ -26,14 +24,14 @@ export function useProductos() {
   const actualizarDatos = async () => {
     try {
       setLoading(true);
-      const respuesta = await api.get("/articulos");
+      const respuesta = await api.get('/articulos');
       const nuevosProductos = Array.isArray(respuesta.data.body) ? respuesta.data.body : [];
       await insertarProductos(nuevosProductos);
       const datosLocales = await obtenerProductos();
       setProductos(datosLocales);
       setError(null);
     } catch (err: any) {
-      setError(err.message || "Error al actualizar productos");
+      setError(err.message || 'Error al actualizar productos');
     } finally {
       setLoading(false);
     }

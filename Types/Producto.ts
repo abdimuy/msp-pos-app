@@ -3,4 +3,5 @@ export type Producto = {
   ARTICULO: string;
   EXISTENCIAS: number;
   PRECIO: number;
+  imagenRuta?: string;
 };
