@@ -32,6 +32,7 @@
     "react-native-reanimated": "^3.16.2",
     "react-native-safe-area-context": "^5.4.0",
     "expo-file-system": "~18.1.10"
+    "react-native-uuid": "^2.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
