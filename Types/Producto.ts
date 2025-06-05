@@ -3,8 +3,5 @@ export type Producto = {
   ARTICULO: string;
   EXISTENCIAS: number;
   PRECIO: number;
-  IMAGENRUTA?: string | null;  
+  IMAGEN_RUTA?: string | null;
 };
-
-
-

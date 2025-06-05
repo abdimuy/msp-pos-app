@@ -1,11 +1,8 @@
 import * as SQLite from 'expo-sqlite';
-import { Producto } from "../../Types/Producto";
-import { Sale } from "../../Types/sales"
-import { UrlObject } from 'expo-router/build/global-state/routeInfo';
+import { Producto } from '../../Types/Producto';
+import { Sale } from '../../Types/sales';
 
 let db: SQLite.SQLiteDatabase;
-
-
 
 export const initDB = async (): Promise<void> => {
   try {
@@ -20,7 +17,6 @@ export const initDB = async (): Promise<void> => {
         PRECIO REAL NOT NULL
       );
     `);
-
 
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS articulos_imagenes (
@@ -40,7 +36,7 @@ export const initDB = async (): Promise<void> => {
         date TEXT NOT NULL,
         status INTEGER NOT NULL CHECK (status IN (0,1))
       );`
-    )
+    );
     await db.execAsync(
       ` CREATE TABLE IF NOT EXISTS sale_images (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,7 +44,7 @@ export const initDB = async (): Promise<void> => {
         url TEXT NOT NULL,
         FOREIGN KEY (sale_id) REFERENCES sale(id) ON DELETE CASCADE
       );`
-    )
+    );
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
     throw error;
@@ -96,18 +92,16 @@ export const obtenerProductos = async (): Promise<Producto[]> => {
 export const insertarVenta = async (venta: Sale): Promise<void> => {
   try {
     //Guarda los datos String en la tabla sale
-    const result = await db.runAsync(
-      `INSERT INTO sale (name, date, status) VALUES (?, ?, ?);`,
-      [venta.name, venta.date, venta.status]
-    );
+    const result = await db.runAsync(`INSERT INTO sale (name, date, status) VALUES (?, ?, ?);`, [
+      venta.name,
+      venta.date,
+      venta.status,
+    ]);
     const saleId = result.lastInsertRowId;
 
     // Guarda las imagenes capturadas
     for (const img of venta.images) {
-      await db.runAsync(
-        `INSERT INTO sale_images (sale_id, url) VALUES (?, ?);`,
-        [saleId, img.url]
-      );
+      await db.runAsync(`INSERT INTO sale_images (sale_id, url) VALUES (?, ?);`, [saleId, img.url]);
     }
   } catch (error) {
     console.error(error);
@@ -116,16 +110,14 @@ export const insertarVenta = async (venta: Sale): Promise<void> => {
 
 export const obtenerVentas = async (): Promise<Sale[]> => {
   try {
-    const ventasBase = await db.getAllAsync<Sale>(
-      `SELECT id, name, date, status FROM sale;`
-    );
+    const ventasBase = await db.getAllAsync<Sale>(`SELECT id, name, date, status FROM sale;`);
 
     for (const venta of ventasBase) {
       const imagenes = await db.getAllAsync<{ url: string }>(
         `SELECT url FROM sale_images WHERE sale_id = ?;`,
         [venta.id]
       );
-      venta.images = imagenes.map(img => ({ url: img.url }));
+      venta.images = imagenes.map((img) => ({ url: img.url }));
     }
 
     return ventasBase;
@@ -140,11 +132,11 @@ export const obtenerImagenPrincipalPorArticulo = async (
 ): Promise<string | null> => {
   try {
     const database = getDB();
-    const resultado = await database.getFirstAsync<{ ruta_local: string }>(
+    const imagenPrincipal = await database.getFirstAsync<{ ruta_local: string }>(
       `SELECT ruta_local FROM articulos_imagenes WHERE articulo_id = ? LIMIT 1;`,
       [articulo_id]
     );
-    return resultado ? resultado.ruta_local : null;
+    return imagenPrincipal ? imagenPrincipal.ruta_local : null;
   } catch (error) {
     console.error('Error al obtener imagen principal:', error);
     return null;
@@ -191,11 +183,11 @@ export const insertarRutasImagenesSiNoExisten = async (
 export const obtenerRutasImagenesPorArticulo = async (articulo_id: number): Promise<string[]> => {
   try {
     const database = getDB();
-    const resultados = await database.getAllAsync<{ ruta_local: string }>(
+    const rutasLocales = await database.getAllAsync<{ ruta_local: string }>(
       `SELECT ruta_local FROM articulos_imagenes WHERE articulo_id = ?;`,
       [articulo_id]
     );
-    return resultados.map((r) => r.ruta_local);
+    return rutasLocales.map((r) => r.ruta_local);
   } catch (error) {
     console.error('Error al obtener rutas de imágenes:', error);
     return [];
@@ -205,13 +197,13 @@ export const obtenerRutasImagenesPorArticulo = async (articulo_id: number): Prom
 export async function obtenerProductoPorId(id: number): Promise<Producto | null> {
   try {
     const database = getDB();
-    const result = await database.getAllAsync<Producto>(
+    const datosDeLProducto = await database.getAllAsync<Producto>(
       'SELECT ARTICULO, PRECIO FROM productos WHERE ARTICULO_ID = ?',
       [id]
     );
 
-    if (result.length > 0) {
-      return result[0];
+    if (datosDeLProducto.length > 0) {
+      return datosDeLProducto[0];
     } else {
       return null;
     }
@@ -237,7 +229,7 @@ export const obtenerDetallesVenta = async (id: number): Promise<Sale | null> => 
       [id]
     );
 
-    detalles.images = detalles_img.map(img => ({ url: img.url }));
+    detalles.images = detalles_img.map((img) => ({ url: img.url }));
 
     return detalles;
   } catch (error) {
@@ -245,8 +237,6 @@ export const obtenerDetallesVenta = async (id: number): Promise<Sale | null> => 
     return null;
   }
 };
-
-
 
 //Elimina la Venta realizada, asi como sus datos(Esto incluye imagenes)
 export const eliminarTodasLasVentas = async (): Promise<void> => {
@@ -262,4 +252,3 @@ export const eliminarTodasLasVentas = async (): Promise<void> => {
     console.error(error);
   }
 };
-

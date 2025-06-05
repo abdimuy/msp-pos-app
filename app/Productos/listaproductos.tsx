@@ -87,7 +87,7 @@ function ProductoCard({ item }: { item: Producto }) {
           </View>
         ) : (
           <Image
-            source={{ uri: 'file://' + item.IMAGENRUTA }}
+            source={{ uri: 'file://' + item.IMAGEN_RUTA }}
             style={styles.imagen}
             resizeMode="cover"
             onError={() => setErrorCarga(true)}

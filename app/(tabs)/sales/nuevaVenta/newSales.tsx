@@ -14,10 +14,10 @@ import {
 } from 'react-native';
 import { Feather, AntDesign, Entypo } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
-import { styles } from './_newSales.styles'
+import { styles } from './_newSales.styles';
 import { Boton } from '../../../../Componentes/Boton/boton';
 import { Link, useRouter } from 'expo-router';
-import { Sale } from 'Types/sales'
+import { Sale } from 'Types/sales';
 import { insertarVenta } from 'app/Database/database';
 import uuid from 'react-native-uuid';
 
@@ -43,7 +43,6 @@ export default function RegistrarCliente() {
     }
   };
   const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
-
 
   const abrirSelectorFuente = () => {
     setMostrarSelectorFuente(true);
@@ -85,15 +84,14 @@ export default function RegistrarCliente() {
       name: nombre,
       date: new Date().toISOString(),
       status: 0,
-      images: fotosUris.map(url => ({ url })),
+      images: fotosUris.map((url) => ({ url })),
     };
     await insertarVenta(nuevaVenta);
     setNombre('');
     setFotosUris([]);
     setIsLoading(false);
-    router.replace('/(tabs)/sales/listaVentas/listSale')
+    router.replace('/(tabs)/sales/listaVentas/listSale');
   };
-
 
   return (
     <KeyboardAvoidingView
@@ -169,11 +167,10 @@ export default function RegistrarCliente() {
               variant="primary"
               size="large"
             />
-            
+
             <Link href="/" asChild>
               <Button title="Atrás" onPress={() => {}} />
             </Link>
-
           </View>
         </ScrollView>
       )}
@@ -207,4 +204,3 @@ export default function RegistrarCliente() {
     </KeyboardAvoidingView>
   );
 }
-
