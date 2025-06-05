@@ -18,7 +18,7 @@ export const initDB = async (): Promise<void> => {
     `);
 
     await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS imagenes (
+      CREATE TABLE IF NOT EXISTS articulos_imagenes (
         imagen_id INTEGER PRIMARY KEY,
         articulo_id INTEGER NOT NULL,
         ruta_local TEXT NOT NULL UNIQUE,
@@ -62,24 +62,29 @@ export const obtenerProductos = async (): Promise<Producto[]> => {
   try {
     const database = getDB();
     const resultados = await database.getAllAsync<Producto>(
-      `SELECT 
-        p.ARTICULO_ID, 
-        p.ARTICULO, 
-        p.EXISTENCIAS, 
-        p.PRECIO,
-        (
-          SELECT ruta_local 
-          FROM imagenes i 
-          WHERE i.articulo_id = p.ARTICULO_ID 
-          LIMIT 1
-        ) AS imagenRuta
-      FROM productos p;`
+      `SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;`
     );
     console.log(`Recuperados ${resultados.length} productos.`);
     return resultados;
   } catch (error) {
     console.error('Error al obtener productos:', error);
     return [];
+  }
+};
+
+export const obtenerImagenPrincipalPorArticulo = async (
+  articulo_id: number
+): Promise<string | null> => {
+  try {
+    const database = getDB();
+    const resultado = await database.getFirstAsync<{ ruta_local: string }>(
+      `SELECT ruta_local FROM articulos_imagenes WHERE articulo_id = ? LIMIT 1;`,
+      [articulo_id]
+    );
+    return resultado ? resultado.ruta_local : null;
+  } catch (error) {
+    console.error('Error al obtener imagen principal:', error);
+    return null;
   }
 };
 
@@ -100,13 +105,13 @@ export const insertarRutasImagenesSiNoExisten = async (
 
     for (const { imagen_id, ruta_local } of imagenes) {
       const existente = await database.getFirstAsync<{ imagen_id: number }>(
-        `SELECT imagen_id FROM imagenes WHERE imagen_id = ?;`,
+        `SELECT imagen_id FROM articulos_imagenes WHERE imagen_id = ?;`,
         [imagen_id]
       );
 
       if (!existente) {
         await database.runAsync(
-          `INSERT INTO imagenes (imagen_id, articulo_id, ruta_local) VALUES (?, ?, ?);`,
+          `INSERT INTO articulos_imagenes (imagen_id, articulo_id, ruta_local) VALUES (?, ?, ?);`,
           [imagen_id, articulo_id, ruta_local]
         );
         nuevas++;
@@ -124,7 +129,7 @@ export const obtenerRutasImagenesPorArticulo = async (articulo_id: number): Prom
   try {
     const database = getDB();
     const resultados = await database.getAllAsync<{ ruta_local: string }>(
-      `SELECT ruta_local FROM imagenes WHERE articulo_id = ?;`,
+      `SELECT ruta_local FROM articulos_imagenes WHERE articulo_id = ?;`,
       [articulo_id]
     );
     return resultados.map((r) => r.ruta_local);
@@ -138,7 +143,7 @@ export async function obtenerProductoPorId(id: number): Promise<Producto | null>
   try {
     const database = getDB();
     const result = await database.getAllAsync<Producto>(
-      'SELECT * FROM productos WHERE ARTICULO_ID = ?',
+      'SELECT ARTICULO, PRECIO FROM productos WHERE ARTICULO_ID = ?',
       [id]
     );
 
@@ -152,3 +157,13 @@ export async function obtenerProductoPorId(id: number): Promise<Producto | null>
     return null;
   }
 }
+
+export const borrarTodasLasImagenes = async (): Promise<void> => {
+  try {
+    const database = getDB();
+    await database.runAsync(`DELETE FROM articulos_imagenes;`);
+    console.log('Todas las imágenes han sido eliminadas de la base de datos.');
+  } catch (error) {
+    console.error('Error al borrar imágenes:', error);
+  }
+};

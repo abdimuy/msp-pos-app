@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
-import { insertarProductos, obtenerProductos } from '../Database/database';
+import {
+  insertarProductos,
+  obtenerProductos,
+  obtenerImagenPrincipalPorArticulo,
+} from '../Database/database';
 import api from '../api';
 import { Producto } from '../../Types/Producto';
 
@@ -8,11 +12,22 @@ export function useProductos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const cargarProductos = async () => {
+  const cargarProductosConImagenes = async () => {
     try {
       setLoading(true);
+
+      // Obtiene productos desde la base local
       const datosLocales = await obtenerProductos();
-      setProductos(datosLocales);
+
+      // Para cada producto, obtiene la imagen principal y la agrega al objeto producto
+      const productosConImagen = await Promise.all(
+        datosLocales.map(async (p) => {
+          const ruta = await obtenerImagenPrincipalPorArticulo(p.ARTICULO_ID);
+          return { ...p, IMAGENRUTA: ruta };
+        })
+      );
+
+      setProductos(productosConImagen);
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Error al cargar productos');
@@ -21,14 +36,19 @@ export function useProductos() {
     }
   };
 
-  const actualizarDatos = async () => {
+  const actualizarDatosProductos = async () => {
     try {
       setLoading(true);
+      // Obtener productos desde API
       const respuesta = await api.get('/articulos');
       const nuevosProductos = Array.isArray(respuesta.data.body) ? respuesta.data.body : [];
+
+      // Guardar productos en la base local
       await insertarProductos(nuevosProductos);
-      const datosLocales = await obtenerProductos();
-      setProductos(datosLocales);
+
+      // Luego recargar productos con imágenes desde la BD local
+      await cargarProductosConImagenes();
+
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Error al actualizar productos');
@@ -38,8 +58,8 @@ export function useProductos() {
   };
 
   useEffect(() => {
-    cargarProductos();
+    cargarProductosConImagenes();
   }, []);
 
-  return { productos, loading, error, actualizarDatos };
+  return { productos, loading, error, actualizarDatosProductos };
 }

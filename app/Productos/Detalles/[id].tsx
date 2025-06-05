@@ -1,24 +1,26 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, Image, Button, Modal, TouchableOpacity } from 'react-native';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import { useGetImage } from '../Detalles/useGetImage';
+import { useGetImageById } from './useGetImageById';
 import { useLocalSearchParams, Link } from 'expo-router';
-import { useProducto } from '../../Productos/Detalles/useProducto';
+import { useGetProductById } from './useGetProductById ';
 
 export default function DetalleProducto() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const idNum = Number(id);
 
-  const { imagenes, loading: loadingImagenes, error: errorImagenes } = useGetImage(idNum);
-  const { producto, loading: loadingProducto, error: errorProducto } = useProducto(idNum);
+  const { imagenes, loading: loadingImagenes, error: errorImagenes } = useGetImageById(idNum);
+  const { producto, loading: loadingProducto, error: errorProducto } = useGetProductById(idNum);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   //Prepara las imagenes para el componente ImageViewer, que espera un array de objetos con la propiedad url.
-  const images = imagenes.map((uri) => ({
-    url: uri.startsWith('file://') ? uri : 'file://' + uri,
-  }));
+  const images = useMemo(() => {
+    return imagenes.map((uri) => ({
+      url: uri.startsWith('file://') ? uri : 'file://' + uri,
+    }));
+  }, [imagenes]);
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
@@ -43,7 +45,7 @@ export default function DetalleProducto() {
         </TouchableOpacity>
       ))}
 
-      {loadingProducto && <Text>Cargando producto...</Text>}
+      {loadingProducto && <Text>Cargando productos...</Text>}
       {errorProducto && <Text style={{ color: 'red' }}>{errorProducto}</Text>}
       {producto && (
         <View style={{ marginBottom: 20 }}>

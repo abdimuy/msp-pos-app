@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Producto } from '../../../Types/Producto';
 import { obtenerProductoPorId } from '../../Database/database';
 
-export function useProducto(id: number) {
+export function useGetProductById(id: number) {
   const [producto, setProducto] = useState<Producto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const obtenerProductoActualizado = useCallback(() => {
+    setLoading(true);
     obtenerProductoPorId(id)
       .then((res) => {
         setProducto(res);
@@ -17,5 +18,9 @@ export function useProducto(id: number) {
       .finally(() => setLoading(false));
   }, [id]);
 
-  return { producto, loading, error };
+  useEffect(() => {
+    obtenerProductoActualizado();
+  }, [obtenerProductoActualizado]);
+
+  return { producto, loading, error, actualizarProducto: obtenerProductoActualizado };
 }

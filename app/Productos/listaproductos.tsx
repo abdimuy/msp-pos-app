@@ -9,10 +9,10 @@ import {
   Alert,
 } from 'react-native';
 import { Link } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import fuzzysort from 'fuzzysort';
 import { Ionicons } from '@expo/vector-icons';
-import { useProductos } from './useGetProducts';
+import { useProductos } from './useGetProductos';
 import { Producto } from '../../Types/Producto';
 import { styles } from './ListaProductos.styles';
 
@@ -26,17 +26,24 @@ export default function ListaProductos() {
     }
   }, [error]);
 
-  const productosFiltrados = filtro
-    ? fuzzysort
+  const productosFiltrados = useMemo(() => {
+    if (filtro) {
+      return fuzzysort
         .go(
           filtro,
           productos.filter((p) => p.EXISTENCIAS > 0),
           { key: 'ARTICULO' }
         )
-        .map((result) => result.obj)
-    : productos.filter((p) => p.EXISTENCIAS > 0);
+        .map((result) => result.obj);
+    } else {
+      return productos.filter((p) => p.EXISTENCIAS > 0);
+    }
+  }, [filtro, productos]);
 
-  const renderItem = ({ item }: { item: Producto }) => <ProductoCard item={item} />;
+  const renderItem = useCallback(
+    ({ item }: { item: Producto }) => <ProductoCard item={item} />,
+    []
+  );
 
   return (
     <View style={styles.contenedor}>
@@ -80,7 +87,7 @@ function ProductoCard({ item }: { item: Producto }) {
           </View>
         ) : (
           <Image
-            source={{ uri: 'file://' + item.imagenRuta || 'https://via.placeholder.com/80' }}
+            source={{ uri: 'file://' + item.IMAGENRUTA }}
             style={styles.imagen}
             resizeMode="cover"
             onError={() => setErrorCarga(true)}

@@ -1,4 +1,4 @@
-import { fetchImagenes, Imagenes } from '../services/getImage';
+import { Imagenes } from '../services/getImage';
 import * as FileSystem from 'expo-file-system';
 import { getDB, insertarRutasImagenesSiNoExisten } from '../../app/Database/database';
 import { Alert } from 'react-native';
@@ -7,24 +7,23 @@ import { Alert } from 'react-native';
 const obtenerImagenesExistentes = async (): Promise<Set<number>> => {
   const database = getDB();
   const filas = await database.getAllAsync<{ imagen_id: number }>(
-    `SELECT imagen_id FROM imagenes;`,
+    `SELECT imagen_id FROM articulos_imagenes;`,
     []
   );
   return new Set(filas.map((f) => f.imagen_id));
 };
 
-//Toma como entrada un array de productso con urls y extrae la url
+// Toma como entrada un array de productos con URLs y extrae la URL
 export const contarImagenesNuevas = async (
   data: Imagenes[]
 ): Promise<{
-  totalNuevas: number;
-  nuevasPorProducto: Record<number, { id: number; url: string }[]>;
+  totalImagenesNuevas: number;
+  imagenesNuevasPorProducto: Record<number, { id: number; url: string }[]>;
 }> => {
-  //Obtienelas que ya estan guardada
   const existentes = await obtenerImagenesExistentes();
 
-  let totalNuevas = 0;
-  const nuevasPorProducto: Record<number, { id: number; url: string }[]> = {};
+  let totalImagenesNuevas = 0;
+  const imagenesNuevasPorProducto: Record<number, { id: number; url: string }[]> = {};
 
   for (const articulo of data) {
     for (const urlCompleta of articulo.urls) {
@@ -36,101 +35,89 @@ export const contarImagenesNuevas = async (
         continue;
       }
 
-      //Si la imagen aún no existe en la base de datos, se considera nueva y se guarda en el resultado
       if (!existentes.has(imagen_id)) {
-        totalNuevas++;
-        if (!nuevasPorProducto[articulo.id]) nuevasPorProducto[articulo.id] = [];
-        nuevasPorProducto[articulo.id].push({ id: imagen_id, url: urlCompleta });
+        totalImagenesNuevas++;
+        if (!imagenesNuevasPorProducto[articulo.id]) imagenesNuevasPorProducto[articulo.id] = [];
+        imagenesNuevasPorProducto[articulo.id].push({ id: imagen_id, url: urlCompleta });
       }
     }
   }
 
-  return { totalNuevas, nuevasPorProducto };
+  return { totalImagenesNuevas, imagenesNuevasPorProducto };
 };
 
-//Descarga una imagen desde una URL y la guarda en el almacenamiento local del dispositivo
-const descargarYGuardarImagen = async (
-  url: string,
-  nombreArchivo: string
-): Promise<{ ruta: string; tamano: number }> => {
-  const directorio = `${FileSystem.documentDirectory}imagenes`;
-  await FileSystem.makeDirectoryAsync(directorio, { intermediates: true });
+//Devuelve la ruta completa donde se debería guardar una imagen
+const rutaImagenLocal = (nombreArchivo: string) =>
+  `${FileSystem.documentDirectory}imagenes/${nombreArchivo}.jpg`;
 
-  const rutaLocal = `${directorio}/${nombreArchivo}.jpg`;
-  const fileInfo = await FileSystem.getInfoAsync(rutaLocal);
-
-  if (fileInfo.exists) {
-    const tamano = 'size' in fileInfo ? (fileInfo.size ?? 0) : 0;
-    return { ruta: rutaLocal, tamano };
+const existeImagen = async (ruta: string): Promise<{ ruta: string; tamano: number } | null> => {
+  const info = await FileSystem.getInfoAsync(ruta);
+  if (info.exists) {
+    const tamano = 'size' in info ? (info.size ?? 0) : 0;
+    return { ruta, tamano };
   }
+  return null;
+};
 
+const guardarImagen = async (
+  url: string,
+  ruta: string
+): Promise<{ ruta: string; tamano: number }> => {
   try {
-    const descarga = await FileSystem.downloadAsync(url, rutaLocal);
-    const nuevaInfo = await FileSystem.getInfoAsync(descarga.uri);
-    const tamano = nuevaInfo.exists && 'size' in nuevaInfo ? (nuevaInfo.size ?? 0) : 0;
+    const descarga = await FileSystem.downloadAsync(url, ruta);
+    const info = await FileSystem.getInfoAsync(descarga.uri);
+    const tamano = info.exists && 'size' in info ? (info.size ?? 0) : 0;
     return { ruta: descarga.uri, tamano };
-  } catch (error) {
-    console.error('Error descargando imagen:', error);
+  } catch (e) {
+    console.error('Error al guardar imagen:', e);
     return { ruta: '', tamano: 0 };
   }
 };
 
-//Permite ejecutar la descargar de manera progresiva sin saturar
-const limitarConcurrencia = <T>(
-  items: T[],
-  maxConcurrent: number,
-  fn: (item: T) => Promise<void>
-): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    let enEjecucion = 0;
-    let index = 0;
+const descargarImagenSiNoExiste = async (
+  url: string,
+  nombreArchivo: string
+): Promise<{ ruta: string; tamano: number }> => {
+  const dir = `${FileSystem.documentDirectory}imagenes`;
+  await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
 
-    const siguiente = () => {
-      if (index === items.length && enEjecucion === 0) {
-        resolve();
-        return;
-      }
-
-      while (enEjecucion < maxConcurrent && index < items.length) {
-        const item = items[index++];
-        enEjecucion++;
-        fn(item)
-          .catch(reject)
-          .finally(() => {
-            enEjecucion--;
-            siguiente();
-          });
-      }
-    };
-
-    siguiente();
-  });
+  const ruta = rutaImagenLocal(nombreArchivo);
+  return (await existeImagen(ruta)) ?? (await guardarImagen(url, ruta));
 };
 
 // Sincroniza las nuevas imágenes agrupadas por producto.
-export const sincronizarImagenesDesdeInfo = async (
-  nuevasPorProducto: Record<number, { id: number; url: string }[]>
+export const sincronizarImagenesNuevasPorProducto = async (
+  imagenesNuevasPorProducto: Record<number, { id: number; url: string }[]>
 ): Promise<void> => {
   try {
     let pesoTotalBytes = 0;
 
-    for (const articuloIdStr in nuevasPorProducto) {
+    for (const articuloIdStr in imagenesNuevasPorProducto) {
       const articuloId = Number(articuloIdStr);
-      const imagenesNuevas = nuevasPorProducto[articuloId];
+      const imagenesNuevas = imagenesNuevasPorProducto[articuloId];
       if (!imagenesNuevas) continue;
 
       const rutasLocales: { imagen_id: number; ruta_local: string }[] = [];
 
-      await limitarConcurrencia(imagenesNuevas, 5, async (img) => {
-        const urlCorregida = img.url.replace('localhost', '192.168.0.219'); //Reemplaza localhost por una IP real para que funcione en un dispositivo físico.
-        const resultado = await descargarYGuardarImagen(urlCorregida, `${articuloId}_${img.id}`);
-        if (resultado.ruta) {
-          rutasLocales.push({ imagen_id: img.id, ruta_local: resultado.ruta });
-          pesoTotalBytes += resultado.tamano;
-        }
-      });
+      //Ejecuta en paralelo de todas las descargas de imágenes de ese producto usando Promise.all
+      const resultadosImagenes = await Promise.all(
+        imagenesNuevas.map(async (img) => {
+          const urlCorregida = img.url.replace('localhost', '192.168.0.219');
+          const resultado = await descargarImagenSiNoExiste(
+            urlCorregida,
+            `${articuloId}_${img.id}`
+          );
+          return { ...resultado, id: img.id };
+        })
+      );
 
-      //Inserta las rutas en la base de datos, evitando duplicados
+      for (const res of resultadosImagenes) {
+        if (res.ruta) {
+          rutasLocales.push({ imagen_id: res.id, ruta_local: res.ruta });
+          pesoTotalBytes += res.tamano;
+        }
+      }
+
       if (rutasLocales.length > 0) {
         await insertarRutasImagenesSiNoExisten(articuloId, rutasLocales);
         console.log(
@@ -140,7 +127,7 @@ export const sincronizarImagenesDesdeInfo = async (
     }
 
     const pesoTotalMB = (pesoTotalBytes / (1024 * 1024)).toFixed(2);
-    console.log(`Descarga finalizada. Se descargaron de imágenes (${pesoTotalMB} MB).`);
+    console.log(`Descarga finalizada. Se descargaron imágenes (${pesoTotalMB} MB).`);
   } catch (error) {
     console.error('ERROR al sincronizar imágenes:', error);
     Alert.alert(

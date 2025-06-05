@@ -1,21 +1,25 @@
 import { Text, View, Alert } from 'react-native';
-import { useProductos } from './Productos/useGetProducts';
+import { useProductos } from './Productos/useGetProductos';
 import { useEffect, useState } from 'react';
 import { Link } from 'expo-router';
 import { Boton } from '../Componentes/Boton/boton';
-import { fetchImagenes } from '../src/services/getImage'; 
-import { contarImagenesNuevas, sincronizarImagenesDesdeInfo } from '../src/services/SincronizarImagenes';
+import { getImage } from '../src/services/getImage';
+import {
+  contarImagenesNuevas,
+  sincronizarImagenesNuevasPorProducto,
+} from '../src/services/SincronizarImagenes';
+import { borrarTodasLasImagenes } from './Database/database';
 
 export default function Home() {
-  const { actualizarDatos, error } = useProductos();
+  const { actualizarDatosProductos, error } = useProductos();
   const [loadingActualizar, setLoadingActualizar] = useState(false);
 
   useEffect(() => {
     if (error) {
-      Alert.alert("Error", error);
+      Alert.alert('Error', error);
     }
   }, [error]);
- 
+
   const confirmarDescarga = (cantidad: number): Promise<boolean> => {
     return new Promise((resolve) => {
       Alert.alert(
@@ -23,42 +27,41 @@ export default function Home() {
         `Hay ${cantidad} imágenes nuevas. ¿Deseas descargarlas?`,
         [
           { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
-          { text: 'Descargar', onPress: () => resolve(true) }
+          { text: 'Descargar', onPress: () => resolve(true) },
         ],
         { cancelable: false }
       );
     });
   };
- 
+
   const manejarActualizacion = async () => {
-  try {
-    setLoadingActualizar(true);
+    try {
+      setLoadingActualizar(true);
 
-    //Llama a la funcion.
-    await actualizarDatos();
-    //Descarga info de imágenes con fetchImagenes y valida si es un array 
-    const data = await fetchImagenes();
-    if (!data || !Array.isArray(data)) return;
+      //Llama a la funcion.
+      await actualizarDatosProductos();
+      //Obtiene el array de las url y las guarda
+      const listaImagenesProductos = await getImage();
+      if (!listaImagenesProductos || !Array.isArray(listaImagenesProductos)) return;
 
-    const { totalNuevas, nuevasPorProducto } = await contarImagenesNuevas(data);
+      const { totalImagenesNuevas, imagenesNuevasPorProducto } =
+        await contarImagenesNuevas(listaImagenesProductos);
 
+      if (totalImagenesNuevas > 20) {
+        const confirmado = await confirmarDescarga(totalImagenesNuevas);
+        if (!confirmado) return;
+      } else {
+        console.log(`Descargando automáticamente ${totalImagenesNuevas} imágenes...`);
+      }
 
-    if (totalNuevas > 20) {
-      const confirmado = await confirmarDescarga(totalNuevas);
-      if (!confirmado) return;
-    } else {
-      console.log(`Descargando automáticamente ${totalNuevas} imágenes...`);
-    } 
+      await sincronizarImagenesNuevasPorProducto(imagenesNuevasPorProducto);
+    } catch (error) {
+      Alert.alert('Error', 'Hubo un problema durante la actualización.');
+    } finally {
+      setLoadingActualizar(false);
+    }
     Alert.alert('Éxito', 'Datos actualizados.');
-
-    await sincronizarImagenesDesdeInfo(nuevasPorProducto);
-
-  } catch (error) {
-    Alert.alert('Error', 'Hubo un problema durante la actualización.');
-  } finally {
-    setLoadingActualizar(false);
-  }
-};
+  };
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 }}>
@@ -77,6 +80,20 @@ export default function Home() {
         onPress={manejarActualizacion}
         loading={loadingActualizar}
         disabled={loadingActualizar}
+      />
+      <Boton
+        label="Borrar Fotos"
+        onPress={async () => {
+          try {
+            setLoadingActualizar(true);
+            await borrarTodasLasImagenes();
+            Alert.alert('Éxito', 'Todas las fotos fueron eliminadas.');
+          } catch (error) {
+            Alert.alert('Error', 'No se pudieron borrar las fotos.');
+          } finally {
+            setLoadingActualizar(false);
+          }
+        }}
       />
     </View>
   );
