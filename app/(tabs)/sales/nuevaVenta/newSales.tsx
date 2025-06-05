@@ -19,7 +19,7 @@ import { Boton } from '../../../../Componentes/Boton/boton';
 import { Link, useRouter } from 'expo-router';
 import { Sale } from 'Types/sales'
 import { insertarVenta } from 'app/Database/database';
-import uuid from 'react-native-uuid'
+import uuid from 'react-native-uuid';
 
 export default function RegistrarCliente() {
   const [nombre, setNombre] = useState('');

@@ -7,7 +7,7 @@ import {
 import api from '../api';
 import { Producto } from '../../Types/Producto';
 
-export function useProductos() {
+export function useGetProductos() {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

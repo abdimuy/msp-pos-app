@@ -1,5 +1,5 @@
 import { Text, View, Alert } from 'react-native';
-import { useProductos } from './Productos/useGetProductos';
+import { useGetProductos } from './Productos/useGetProductos';
 import { useEffect, useState } from 'react';
 import { Link } from 'expo-router';
 import { Boton } from '../Componentes/Boton/boton';
@@ -8,10 +8,9 @@ import {
   contarImagenesNuevas,
   sincronizarImagenesNuevasPorProducto,
 } from '../src/services/SincronizarImagenes';
-import { borrarTodasLasImagenes } from './Database/database';
 
 export default function Home() {
-  const { actualizarDatosProductos, error } = useProductos();
+  const { actualizarDatosProductos, error } = useGetProductos();
   const [loadingActualizar, setLoadingActualizar] = useState(false);
 
   useEffect(() => {
@@ -71,13 +70,11 @@ export default function Home() {
         <Boton label="Nueva venta" onPress={() => {}} />
       </Link>
 
-
-      <Link href="/Productos/ListaProductos" asChild>
-        
       <Link href="/(tabs)/sales/listaVentas/listSale" asChild>
         <Boton label="Lista de ventas" onPress={() => {}} />
       </Link>
 
+      <Link href="/Productos/ListaProductos" asChild>
         <Boton label="Ver Productos" onPress={() => {}} />
       </Link>
 
@@ -86,20 +83,6 @@ export default function Home() {
         onPress={manejarActualizacion}
         loading={loadingActualizar}
         disabled={loadingActualizar}
-      />
-      <Boton
-        label="Borrar Fotos"
-        onPress={async () => {
-          try {
-            setLoadingActualizar(true);
-            await borrarTodasLasImagenes();
-            Alert.alert('Éxito', 'Todas las fotos fueron eliminadas.');
-          } catch (error) {
-            Alert.alert('Error', 'No se pudieron borrar las fotos.');
-          } finally {
-            setLoadingActualizar(false);
-          }
-        }}
       />
     </View>
   );

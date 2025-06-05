@@ -12,13 +12,13 @@ import { Link } from 'expo-router';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import fuzzysort from 'fuzzysort';
 import { Ionicons } from '@expo/vector-icons';
-import { useProductos } from './useGetProductos';
+import { useGetProductos } from './useGetProductos';
 import { Producto } from '../../Types/Producto';
 import { styles } from './ListaProductos.styles';
 
 export default function ListaProductos() {
   const [filtro, setFiltro] = useState('');
-  const { productos, loading, error } = useProductos();
+  const { productos, loading, error } = useGetProductos();
 
   useEffect(() => {
     if (error) {

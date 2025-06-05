@@ -74,7 +74,7 @@ const guardarImagen = async (
   }
 };
 
-const descargarImagenSiNoExiste = async (
+const guardarImagenSiNoExiste = async (
   url: string,
   nombreArchivo: string
 ): Promise<{ ruta: string; tamano: number }> => {
@@ -103,10 +103,7 @@ export const sincronizarImagenesNuevasPorProducto = async (
       const resultadosImagenes = await Promise.all(
         imagenesNuevas.map(async (img) => {
           const urlCorregida = img.url.replace('localhost', '192.168.0.219');
-          const resultado = await descargarImagenSiNoExiste(
-            urlCorregida,
-            `${articuloId}_${img.id}`
-          );
+          const resultado = await guardarImagenSiNoExiste(urlCorregida, `${articuloId}_${img.id}`);
           return { ...resultado, id: img.id };
         })
       );
