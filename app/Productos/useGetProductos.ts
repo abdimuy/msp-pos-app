@@ -5,10 +5,10 @@ import {
   obtenerImagenPrincipalPorArticulo,
 } from '../Database/database';
 import api from '../api';
-import { Producto } from '../../Types/Producto';
+import { ProductoConImagen } from '../../Types/Producto';
 
 export function useGetProductos() {
-  const [productos, setProductos] = useState<Producto[]>([]);
+  const [productos, setProductos] = useState<ProductoConImagen[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

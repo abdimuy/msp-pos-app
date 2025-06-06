@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { obtenerRutasImagenesPorArticulo } from '../../Database/database';
 
-export function useGetImageById(id: number) {
+export function useGetImagesById(id: number) {
   const [imagenes, setImagenes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

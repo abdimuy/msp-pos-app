@@ -13,7 +13,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import fuzzysort from 'fuzzysort';
 import { Ionicons } from '@expo/vector-icons';
 import { useGetProductos } from './useGetProductos';
-import { Producto } from '../../Types/Producto';
+import { ProductoConImagen } from '../../Types/Producto';
 import { styles } from './ListaProductos.styles';
 
 export default function ListaProductos() {
@@ -41,7 +41,7 @@ export default function ListaProductos() {
   }, [filtro, productos]);
 
   const renderItem = useCallback(
-    ({ item }: { item: Producto }) => <ProductoCard item={item} />,
+    ({ item }: { item: ProductoConImagen }) => <ProductoCard item={item} />,
     []
   );
 
@@ -75,7 +75,7 @@ export default function ListaProductos() {
   );
 }
 
-function ProductoCard({ item }: { item: Producto }) {
+function ProductoCard({ item }: { item: ProductoConImagen }) {
   const [errorCarga, setErrorCarga] = useState(false);
 
   return (

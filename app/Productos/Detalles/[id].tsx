@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { View, Text, Image, Button, Modal, TouchableOpacity } from 'react-native';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import { useGetImageById } from './useGetImageById';
+import { useGetImagesById } from './useGetImagesById';
 import { useLocalSearchParams, Link } from 'expo-router';
 import { useGetProductById } from './useGetProductById ';
 
@@ -9,7 +9,7 @@ export default function DetalleProducto() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const idNum = Number(id);
 
-  const { imagenes, loading: loadingImagenes, error: errorImagenes } = useGetImageById(idNum);
+  const { imagenes, loading: loadingImagenes, error: errorImagenes } = useGetImagesById(idNum);
   const { producto, loading: loadingProducto, error: errorProducto } = useGetProductById(idNum);
 
   const [modalVisible, setModalVisible] = useState(false);
