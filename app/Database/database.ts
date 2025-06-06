@@ -78,10 +78,10 @@ export const insertarProductos = async (productos: Producto[]): Promise<void> =>
 export const obtenerProductos = async (): Promise<Producto[]> => {
   try {
     const database = getDB();
-    const resultados = await database.getAllAsync<Producto>(
+    const productos = await database.getAllAsync<Producto>(
       `SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;`
     );
-    return resultados;
+    return productos;
   } catch (error) {
     console.error(error);
     return [];
@@ -198,7 +198,7 @@ export async function obtenerProductoPorId(id: number): Promise<Producto | null>
   try {
     const database = getDB();
     const datosDeLProducto = await database.getAllAsync<Producto>(
-      'SELECT ARTICULO, PRECIO FROM productos WHERE ARTICULO_ID = ?',
+      'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO  FROM productos WHERE ARTICULO_ID = ?',
       [id]
     );
 

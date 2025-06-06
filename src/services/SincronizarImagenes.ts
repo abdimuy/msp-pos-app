@@ -100,15 +100,18 @@ export const sincronizarImagenesNuevasPorProducto = async (
       const rutasLocales: { imagen_id: number; ruta_local: string }[] = [];
 
       //Ejecuta en paralelo de todas las descargas de imágenes de ese producto usando Promise.all
-      const resultadosImagenes = await Promise.all(
+      const imagenesGuardadas = await Promise.all(
         imagenesNuevas.map(async (img) => {
           const urlCorregida = img.url.replace('localhost', '192.168.0.219');
-          const resultado = await guardarImagenSiNoExiste(urlCorregida, `${articuloId}_${img.id}`);
-          return { ...resultado, id: img.id };
+          const imagenGuardada = await guardarImagenSiNoExiste(
+            urlCorregida,
+            `${articuloId}_${img.id}`
+          );
+          return { ...imagenGuardada, id: img.id };
         })
       );
 
-      for (const res of resultadosImagenes) {
+      for (const res of imagenesGuardadas) {
         if (res.ruta) {
           rutasLocales.push({ imagen_id: res.id, ruta_local: res.ruta });
           pesoTotalBytes += res.tamano;

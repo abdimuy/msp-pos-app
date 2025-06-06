@@ -23,7 +23,7 @@ export default function Home() {
     return new Promise((resolve) => {
       Alert.alert(
         'Sincronizar imágenes',
-        `Hay ${cantidad} imágenes nuevas. ¿Deseas descargarlas?`,
+        `Hay ${cantidad} imágenes nuevas. Descargar las imágenes puede consumir tus datos móviles. ¿Deseas continuar?`,
         [
           { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
           { text: 'Descargar', onPress: () => resolve(true) },
