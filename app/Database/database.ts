@@ -1,22 +1,35 @@
 import * as SQLite from 'expo-sqlite';
 import { Producto } from '../../Types/Producto';
 import { Sale } from '../../Types/sales';
-import { UrlObject } from 'expo-router/build/global-state/routeInfo';
 
 let db: SQLite.SQLiteDatabase;
 
 export const initDB = async (): Promise<void> => {
   try {
     db = await SQLite.openDatabaseAsync('productos.db');
+
     await db.execAsync(`
-        PRAGMA journal_mode = WAL;
-        CREATE TABLE IF NOT EXISTS productos (
-          ARTICULO_ID INTEGER PRIMARY KEY NOT NULL,
-          ARTICULO TEXT NOT NULL,
-          EXISTENCIAS INTEGER NOT NULL,
-          PRECIO REAL NOT NULL
-        );
-      `);
+
+      PRAGMA journal_mode = WAL;
+      CREATE TABLE IF NOT EXISTS productos (
+        ARTICULO_ID INTEGER PRIMARY KEY NOT NULL,
+        ARTICULO TEXT NOT NULL, 
+        EXISTENCIAS INTEGER NOT NULL,
+        PRECIO REAL NOT NULL
+      );
+    `);
+
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS articulos_imagenes (
+        imagen_id INTEGER PRIMARY KEY,
+        articulo_id INTEGER NOT NULL,
+        ruta_local TEXT NOT NULL UNIQUE,
+        FOREIGN KEY (articulo_id) REFERENCES productos(ARTICULO_ID)
+      );
+    `);
+
+    console.log('Base de datos inicializada correctamente.');
+
     await db.execAsync(
       `CREATE TABLE IF NOT EXISTS sale (
           id VARCHAR(50) PRIMARY KEY,
@@ -35,13 +48,14 @@ export const initDB = async (): Promise<void> => {
     );
 
     await almacenarEsquemasIniciales();
+    
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
     throw error;
   }
 };
 
-const getDB = (): SQLite.SQLiteDatabase => {
+export const getDB = (): SQLite.SQLiteDatabase => {
   if (!db) {
     throw new Error('La base de datos no está inicializada. Llama a initDB() primero.');
   }
@@ -68,10 +82,10 @@ export const insertarProductos = async (productos: Producto[]): Promise<void> =>
 export const obtenerProductos = async (): Promise<Producto[]> => {
   try {
     const database = getDB();
-    const resultados = await database.getAllAsync<Producto>(
+    const productos = await database.getAllAsync<Producto>(
       `SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;`
     );
-    return resultados;
+    return productos;
   } catch (error) {
     console.error(error);
     return [];
@@ -82,6 +96,7 @@ export const obtenerProductos = async (): Promise<Producto[]> => {
 export const insertarVenta = async (venta: Sale): Promise<void> => {
   try {
     //Guarda los datos String en la tabla sale
+    
     await db.runAsync(`INSERT INTO sale (id, name, date, status) VALUES (?, ?, ?, ?);`, [
       venta.id,
       venta.name,
@@ -119,6 +134,92 @@ export const obtenerVentas = async (): Promise<Sale[]> => {
     return [];
   }
 };
+
+export const obtenerImagenPrincipalPorArticulo = async (
+  articulo_id: number
+): Promise<string | null> => {
+  try {
+    const database = getDB();
+    const imagenPrincipal = await database.getFirstAsync<{ ruta_local: string }>(
+      `SELECT ruta_local FROM articulos_imagenes WHERE articulo_id = ? LIMIT 1;`,
+      [articulo_id]
+    );
+    return imagenPrincipal ? imagenPrincipal.ruta_local : null;
+  } catch (error) {
+    console.error('Error al obtener imagen principal:', error);
+    return null;
+  }
+};
+
+type ImagenConId = {
+  imagen_id: number;
+  ruta_local: string;
+};
+
+//Inserta en la tabla imagenes las rutas locales de las imágenes asociadas a un producto
+export const insertarRutasImagenesSiNoExisten = async (
+  articulo_id: number,
+  imagenes: ImagenConId[]
+): Promise<void> => {
+  try {
+    const database = getDB();
+
+    let nuevas = 0;
+
+    for (const { imagen_id, ruta_local } of imagenes) {
+      const existente = await database.getFirstAsync<{ imagen_id: number }>(
+        `SELECT imagen_id FROM articulos_imagenes WHERE imagen_id = ?;`,
+        [imagen_id]
+      );
+
+      if (!existente) {
+        await database.runAsync(
+          `INSERT INTO articulos_imagenes (imagen_id, articulo_id, ruta_local) VALUES (?, ?, ?);`,
+          [imagen_id, articulo_id, ruta_local]
+        );
+        nuevas++;
+      }
+    }
+
+    console.log(`Se insertaron ${nuevas} imágenes nuevas para el producto ${articulo_id}`);
+  } catch (error) {
+    console.error('Error al insertar rutas de imágenes:', error);
+  }
+};
+
+//Consulta en la tabla y devuelve un array con las rutas locales
+export const obtenerRutasImagenesPorArticulo = async (articulo_id: number): Promise<string[]> => {
+  try {
+    const database = getDB();
+    const rutasLocales = await database.getAllAsync<{ ruta_local: string }>(
+      `SELECT ruta_local FROM articulos_imagenes WHERE articulo_id = ?;`,
+      [articulo_id]
+    );
+    return rutasLocales.map((r) => r.ruta_local);
+  } catch (error) {
+    console.error('Error al obtener rutas de imágenes:', error);
+    return [];
+  }
+};
+
+export async function obtenerProductoPorId(id: number): Promise<Producto | null> {
+  try {
+    const database = getDB();
+    const datosDeLProducto = await database.getAllAsync<Producto>(
+      'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO  FROM productos WHERE ARTICULO_ID = ?',
+      [id]
+    );
+
+    if (datosDeLProducto.length > 0) {
+      return datosDeLProducto[0];
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Error al obtener producto por ID:', error);
+    return null;
+  }
+}
 
 export const obtenerDetallesVenta = async (id: string): Promise<Sale | null> => {
   try {
