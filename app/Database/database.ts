@@ -4,6 +4,9 @@ import { Sale } from '../../type/Sales';
 
 let db: SQLite.SQLiteDatabase;
 
+export type Tx = Parameters<typeof db.withExclusiveTransactionAsync>[0] extends (tx: infer T) => any
+  ? T : never;
+
 export const initDB = async (): Promise<void> => {
   try {
     db = await SQLite.openDatabaseAsync('productos.db');
@@ -47,19 +50,12 @@ export const initDB = async (): Promise<void> => {
         );`
     );
 
-    await storeInitialSchemas();
+    await storeInitialSchemasLocal();
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
     throw error;
   }
 };
-
-interface SQLTransactionAsync {
-  execAsync(sql: string, args?: any[]): Promise<void>;
-  runAsync(sql: string, args?: any[]): Promise<void>;
-  getFirstAsync<T>(sql: string, args?: any[]): Promise<T>;
-  getAllAsync<T>(sql: string, args?: any[]): Promise<T[]>;
-}
 
 export const getDB = (): SQLite.SQLiteDatabase => {
   if (!db) {
@@ -68,12 +64,12 @@ export const getDB = (): SQLite.SQLiteDatabase => {
   return db;
 };
 
-export const deleteProductsLocal = async (txn:SQLTransactionAsync): Promise<void> => {
+export const deleteProductsLocal = async (txn: Tx): Promise<void> => {
   await txn.runAsync('DELETE FROM productos;');
 };
 
 
-export const insertProductsLocal = async (txn:SQLTransactionAsync, productos: Producto[]): Promise<void> => {
+export const insertProductsLocal = async (txn:Tx, productos: Producto[]): Promise<void> => {
   for (const p of productos) {
     await txn.runAsync(
       `INSERT INTO productos (ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO) VALUES (?, ?, ?, ?);`,
@@ -82,7 +78,7 @@ export const insertProductsLocal = async (txn:SQLTransactionAsync, productos: Pr
   }
 };
 
-export const getProductsLocal = async (txn?: SQLTransactionAsync): Promise<Producto[]> => {
+export const getProductsLocal = async (txn?: Tx): Promise<Producto[]> => {
   const database = txn ?? db;
   const products = await database.getAllAsync<Producto>(
     'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;'
@@ -91,14 +87,14 @@ export const getProductsLocal = async (txn?: SQLTransactionAsync): Promise<Produ
 };
 
 
-const insertSaleLocal = async (txn: SQLTransactionAsync, venta: Sale): Promise<void> => {
+const insertSaleLocal = async (txn: Tx, venta: Sale): Promise<void> => {
   await txn.runAsync(
     `INSERT INTO sale (id, name, date, status) VALUES (?, ?, ?, ?);`,
     [venta.id, venta.name, venta.date, venta.status]
   );
 };
 
-const insertSaleImagenesLocal = async (txn: SQLTransactionAsync, venta: Sale): Promise<void> => {
+const insertSaleImagenesLocal = async (txn: Tx, venta: Sale): Promise<void> => {
   for (const img of venta.images) {
     await txn.runAsync(
       `INSERT INTO sale_images (sale_id, url) VALUES (?, ?);`,
@@ -107,13 +103,13 @@ const insertSaleImagenesLocal = async (txn: SQLTransactionAsync, venta: Sale): P
   }
 };
 
-export const SaveCompleteLocal = async (txn: SQLTransactionAsync, venta: Sale): Promise<void> => {
+export const SaveCompleteLocal = async (txn: Tx, venta: Sale): Promise<void> => {
     await insertSaleLocal(txn, venta);
     await insertSaleImagenesLocal(txn, venta);
   };
  
 
-export const getSaleLocal = async (txn?: SQLTransactionAsync): Promise<Sale[]> => {
+export const getSaleLocal = async (txn?: Tx): Promise<Sale[]> => {
   const database = txn ?? db;
   const saleList = await database.getAllAsync<Sale>(`SELECT id, name, date, status FROM sale;`);
 
@@ -129,7 +125,7 @@ export const getSaleLocal = async (txn?: SQLTransactionAsync): Promise<Sale[]> =
 };
 
 
-export const getFirtImagesByProduct = async (articulo_id: number, txn?: SQLTransactionAsync): Promise<string | null> => {
+export const getFirtImagesByProductLocal = async (articulo_id: number, txn?: Tx): Promise<string | null> => {
     const database = txn ?? db;
     const mainImage = await database.getFirstAsync<{ ruta_local: string }>(
       `SELECT ruta_local FROM articulos_imagenes WHERE articulo_id = ? LIMIT 1;`,
@@ -145,7 +141,7 @@ type ImageWithId = {
 };
 
 //Inserta en la tabla imagenes las rutas locales de las imágenes asociadas a un producto
-export const insertImagePathsIfNotExist = async (txn: SQLTransactionAsync, articulo_id: number, imagenes: ImageWithId[]): Promise<void> => {  
+export const insertImagePathsIfNotExistLocal = async (txn: Tx, articulo_id: number, imagenes: ImageWithId[]): Promise<void> => {  
     let newImagesCount  = 0;
 
     for (const { image_id, local_path } of imagenes) {
@@ -166,7 +162,7 @@ export const insertImagePathsIfNotExist = async (txn: SQLTransactionAsync, artic
 }
 
 //Consulta en la tabla y devuelve un array con las rutas locales
-export const getImagePathsByProduct = async (articulo_id: number, tnx?: SQLTransactionAsync): Promise<string[]> => {
+export const getImagePathsByProductLocal = async (articulo_id: number, tnx?: Tx): Promise<string[]> => {
     const database = tnx?? db;
     const rutasLocales = await database.getAllAsync<{ ruta_local: string }>(
       `SELECT ruta_local FROM articulos_imagenes WHERE articulo_id = ?;`,
@@ -175,7 +171,7 @@ export const getImagePathsByProduct = async (articulo_id: number, tnx?: SQLTrans
     return rutasLocales.map((r) => r.ruta_local);
   };
 
-export async function getProductById(id: number,txn?: SQLTransactionAsync): Promise<Producto | null> {
+export async function getProductByIdLocal(id: number,txn?: Tx): Promise<Producto | null> {
   const database = txn ?? db;
   const productData = await database.getAllAsync<Producto>(
     'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos WHERE ARTICULO_ID = ?',
@@ -186,7 +182,7 @@ export async function getProductById(id: number,txn?: SQLTransactionAsync): Prom
 }
 
 
-export const getSaleDetails = async (id: string,txn?: SQLTransactionAsync): Promise<Sale | null> => {
+export const getSaleDetailsLocal = async (id: number ,txn?: Tx): Promise<Sale | null> => {
   const database = txn ?? db;
 
   const details = await database.getFirstAsync<Sale>(
@@ -208,15 +204,15 @@ export const getSaleDetails = async (id: string,txn?: SQLTransactionAsync): Prom
 
 
 //Elimina la Venta realizada, asi como sus datos(Esto incluye imagenes)
-export const deleteAllSales = async (tnx:SQLTransactionAsync): Promise<void> => {
-    await db.runAsync(`DELETE FROM sale;`);
-    await db.runAsync(`DELETE FROM sale_images;`);
+export const deleteAllSalesLocal = async (tnx:Tx): Promise<void> => {
+    await tnx.runAsync(`DELETE FROM sale;`);
+    await tnx.runAsync(`DELETE FROM sale_images;`);
   }
 
 
 // Función para obtener Tablas de la base de datos actual
 // Devuelve una Promesa con un array de objetos con propiedades
-export const getTableSchemas = async (txn?: SQLTransactionAsync): Promise<Array<{ name: string; sql: string }>> => {
+export const getTableSchemasLocal = async (txn?: Tx): Promise<Array<{ name: string; sql: string }>> => {
   const database = txn ?? db;
 
   return await database.getAllAsync<{ name: string; sql: string }>(
@@ -226,7 +222,7 @@ export const getTableSchemas = async (txn?: SQLTransactionAsync): Promise<Array<
 
 
 // Función para crear y almacenar en esquemas_guardados
-export const storeInitialSchemas = async (txn?: SQLTransactionAsync): Promise<void> => {
+export const storeInitialSchemasLocal = async (txn?: Tx): Promise<void> => {
   const database = txn ?? db;
 
   await database.runAsync(`
@@ -238,7 +234,7 @@ export const storeInitialSchemas = async (txn?: SQLTransactionAsync): Promise<vo
     );
   `);
 
-  const schemas = await getTableSchemas(txn);
+  const schemas = await getTableSchemasLocal(txn);
 
   for (const { name, sql } of schemas) {
     const alreadyExists = await database.getFirstAsync(
@@ -256,7 +252,7 @@ export const storeInitialSchemas = async (txn?: SQLTransactionAsync): Promise<vo
 
   // Solo llamar compareAndModify si se proporciona una transacción
   if (txn) {
-    await compareAndModify(txn);
+    await compareAndModifyLocal(txn);
   }
 };
 
@@ -265,7 +261,7 @@ export const storeInitialSchemas = async (txn?: SQLTransactionAsync): Promise<vo
    
 
 // Función para reemplazar una tabla con un nuevo esquema
-export const replaceTable = async (tableName: string, newSchema: string, txn: SQLTransactionAsync): Promise<void> => {
+export const replaceTableLocal = async (tableName: string, newSchema: string, txn: Tx): Promise<void> => {
 
   // Paso 1: Crear una nueva tabla con el nuevo esquema
   await txn.runAsync(
@@ -291,7 +287,7 @@ export const replaceTable = async (tableName: string, newSchema: string, txn: SQ
 
 
 // Guarda solo el último esquema por tabla
-export const updateSavedSchema = async (tableName: string, txn: SQLTransactionAsync): Promise<void> => {
+export const updateSavedSchemaLocal = async (tableName: string, txn: Tx): Promise<void> => {
 
   // Busca el nombre de la tabla según el parámetro
   const schemaData = await txn.getFirstAsync<{ sql: string }>(
@@ -318,9 +314,9 @@ export const updateSavedSchema = async (tableName: string, txn: SQLTransactionAs
 
 
 // Función para comparar esquemas y reemplazar tablas
-export const compareAndModify = async (txn: SQLTransactionAsync): Promise<void> => {
+export const compareAndModifyLocal = async (txn: Tx): Promise<void> => {
   
-  const esquemasActuales = await getTableSchemas(txn); // Recupera las tablas actuales de todas las tablas
+  const esquemasActuales = await getTableSchemasLocal(txn); // Recupera las tablas actuales de todas las tablas
 
   // Recorre cada tabla obtenida
   for (const { name, sql: esquemaActual } of esquemasActuales) {
@@ -335,9 +331,9 @@ export const compareAndModify = async (txn: SQLTransactionAsync): Promise<void> 
       console.log(`El esquema de la tabla ${name} ha cambiado.`);
 
       // Reemplaza la tabla con el nuevo esquema
-      await replaceTable(name, esquemaActual, txn);
+      await replaceTableLocal(name, esquemaActual, txn);
       // Actualiza el registro del esquema
-      await updateSavedSchema(name, txn);
+      await updateSavedSchemaLocal(name, txn);
 
       console.log(`La tabla ${name} ha sido reemplazada debido a un cambio en su estructura.`);
     }

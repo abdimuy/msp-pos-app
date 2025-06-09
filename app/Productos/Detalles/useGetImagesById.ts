@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { obtenerRutasImagenesPorArticulo } from '../../database/database';
+import { getImagePathsByProductLocal } from '../../database/database';
 
 export function useGetImagesById(id: number) {
   const [imagenes, setImagenes] = useState<string[]>([]);
@@ -13,7 +13,7 @@ export function useGetImagesById(id: number) {
     setError(null);
 
     try {
-      const rutasLocales = await obtenerRutasImagenesPorArticulo(id);
+      const rutasLocales = await getImagePathsByProductLocal(id);
       if (rutasLocales.length > 0) {
         setImagenes(rutasLocales);
       } else {

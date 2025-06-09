@@ -18,7 +18,7 @@ import { styles } from './_newSales.styles';
 import { Boton } from '../../../../componentes/boton/Boton';
 import { Link, useRouter } from 'expo-router';
 import { Sale } from 'type/Sales';
-import { insertarVenta } from 'app/database/database';
+import { SaveCompleteLocal } from 'app/database/database';
 import uuid from 'react-native-uuid';
 
 export default function RegistrarCliente() {
@@ -86,7 +86,7 @@ export default function RegistrarCliente() {
       status: 0,
       images: fotosUris.map((url) => ({ url })),
     };
-    await insertarVenta(nuevaVenta);
+    await SaveCompleteLocal(nuevaVenta);
     setNombre('');
     setFotosUris([]);
     setIsLoading(false);

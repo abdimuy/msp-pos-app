@@ -79,7 +79,7 @@ function ProductoCard({ item }: { item: ProductoConImagen }) {
   const [errorCarga, setErrorCarga] = useState(false);
 
   return (
-    <Link href={`/Productos/Detalles/${item.ARTICULO_ID}`} asChild>
+    <Link href={`/productos/detalles/${item.ARTICULO_ID}`} asChild>
       <TouchableOpacity activeOpacity={0.9} style={styles.card}>
         {errorCarga ? (
           <View style={[styles.imagen, { justifyContent: 'center', alignItems: 'center' }]}>

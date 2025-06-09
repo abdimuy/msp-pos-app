@@ -1,6 +1,6 @@
 import { Imagenes } from './getImageApi';
 import * as FileSystem from 'expo-file-system';
-import { getDB, insertarRutasImagenesSiNoExisten } from '../../app/database/database';
+import { getDB, insertImagePathsIfNotExistLocal } from '../../app/database/database';
 import { Alert } from 'react-native';
 
 // Lee todos lo imagenes_id que esten en mi base de datos
@@ -119,7 +119,7 @@ export const sincronizarImagenesNuevasPorProducto = async (
       }
 
       if (rutasLocales.length > 0) {
-        await insertarRutasImagenesSiNoExisten(articuloId, rutasLocales);
+        await insertImagePathsIfNotExistLocal(articuloId, rutasLocales);
         console.log(
           `Producto ${articuloId}: ${rutasLocales.length} nuevas imágenes sincronizadas.`
         );

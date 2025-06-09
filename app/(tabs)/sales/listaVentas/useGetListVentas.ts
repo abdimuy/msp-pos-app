@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { obtenerVentas } from 'app/database/database';
+import { getSaleLocal } from 'app/database/database';
 import { Sale } from '../../../../type/Sales'; // Ajusta si tu ruta es diferente
 
 export function useGetListVentas() {
@@ -10,7 +10,7 @@ export function useGetListVentas() {
   const cargarListaVentas = async () => {
     setLoading(true);
     try {
-      const datos = await obtenerVentas();
+      const datos = await getSaleLocal();
       setListaVentas(datos);
     } catch (e: any) {
       setError(e.message || 'Error al cargar ventas');

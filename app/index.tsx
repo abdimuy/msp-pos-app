@@ -66,15 +66,15 @@ export default function Home() {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 }}>
       <Text style={{ fontSize: 18, marginBottom: 20 }}>Pantalla de inicio</Text>
 
-      <Link href="/(tabs)/sales/nuevaVenta/newSales" asChild>
+      <Link href="/(tabs)/sales/nuevaVenta/NewSales" asChild>
         <Boton label="Nueva venta" onPress={() => {}} />
       </Link>
 
-      <Link href="/(tabs)/sales/listaVentas/listSale" asChild>
+      <Link href="/(tabs)/sales/listaVentas/ListSale" asChild>
         <Boton label="Lista de ventas" onPress={() => {}} />
       </Link>
 
-      <Link href="/Productos/ListaProductos" asChild>
+      <Link href="/productos/ListaProductos" asChild>
         <Boton label="Ver Productos" onPress={() => {}} />
       </Link>
 

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
-  insertarProductos,
-  obtenerProductos,
-  obtenerImagenPrincipalPorArticulo,
+  insertProductsLocal,
+  getProductsLocal,
+  getFirtImagesByProductLocal,
 } from '../database/database';
 import api from '../api';
 import { ProductoConImagen } from '../../type/Producto';
@@ -17,12 +17,12 @@ export function useGetProductos() {
       setLoading(true);
 
       // Obtiene productos desde la base local
-      const productosLocales = await obtenerProductos();
+      const productosLocales = await getProductsLocal();
 
       // Para cada producto, obtiene la imagen principal y la agrega al objeto producto
       const productosConImagen = await Promise.all(
         productosLocales.map(async (p) => {
-          const ruta = await obtenerImagenPrincipalPorArticulo(p.ARTICULO_ID);
+          const ruta = await getFirtImagesByProductLocal(p.ARTICULO_ID);
           return { ...p, IMAGEN_RUTA: ruta };
         })
       );
@@ -46,7 +46,7 @@ export function useGetProductos() {
         : [];
 
       // Guardar productos en la base local
-      await insertarProductos(nuevosProductos);
+      await insertProductsLocal(txn, nuevosProductos);
 
       // Luego recargar productos con imágenes desde la BD local
       await cargarProductosConImagenes();
