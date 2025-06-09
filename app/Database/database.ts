@@ -61,46 +61,36 @@ export const getDB = (): SQLite.SQLiteDatabase => {
   return db;
 };
 
-export const eliminarTodosLosProductos = async (): Promise<void> => {
-  const db = getDB();
-  await db.withExclusiveTransactionAsync(async (txn) => {
-    await txn.execAsync('DELETE FROM productos;');
-  });
+export const deleteProductsLocal = async (txn:any): Promise<void> => {
+  await txn.execAsync('DELETE FROM productos;');
 };
 
-export const insertarListaDeProductos = async (productos: Producto[]): Promise<void> => {
-  const db = getDB();
-  await db.withExclusiveTransactionAsync(async (txn) => {
-    for (const p of productos) {
-      await txn.runAsync(
-        `INSERT INTO productos (ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO) VALUES (?, ?, ?, ?);`,
-        [p.ARTICULO_ID, p.ARTICULO, p.EXISTENCIAS, p.PRECIO]
-      );
-    }
-  });
-};
 
-export const obtenerProductos = async (): Promise<Producto[]> => {
-  const db = getDB();
-  let productos: Producto[] = [];
-
-  await db.withExclusiveTransactionAsync(async (txn) => {
-    productos = await txn.getAllAsync(
-      'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;'
+export const insertProductsLocal = async (txn: any, productos: Producto[]): Promise<void> => {
+  for (const p of productos) {
+    await txn.runAsync(
+      `INSERT INTO productos (ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO) VALUES (?, ?, ?, ?);`,
+      [p.ARTICULO_ID, p.ARTICULO, p.EXISTENCIAS, p.PRECIO]
     );
-  });
-  return productos;
+  }
 };
 
-// Incerta ventas en base de datos
-const insertarDatosVenta = async (txn: any, venta: Sale): Promise<void> => {
+export const getProductsLocal = async (txn: any): Promise<Producto[]> => {
+  const products = await txn.getAllAsync(
+    'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;'
+  );
+  return products;
+};
+
+
+const insertSaleLocal = async (txn: any, venta: Sale): Promise<void> => {
   await txn.runAsync(
     `INSERT INTO sale (id, name, date, status) VALUES (?, ?, ?, ?);`,
     [venta.id, venta.name, venta.date, venta.status]
   );
 };
 
-const insertarImagenesVenta = async (txn: any, venta: Sale): Promise<void> => {
+const insertSaleImagenesLocal = async (txn: any, venta: Sale): Promise<void> => {
   for (const img of venta.images) {
     await txn.runAsync(
       `INSERT INTO sale_images (sale_id, url) VALUES (?, ?);`,
@@ -109,50 +99,37 @@ const insertarImagenesVenta = async (txn: any, venta: Sale): Promise<void> => {
   }
 };
 
-export const insertarVenta = async (venta: Sale): Promise<void> => {
+export const SaveCompleteLocal = async (txn: any, venta: Sale): Promise<void> => {
   const db = getDB();
-
-  await db.withExclusiveTransactionAsync(async (txn) => {
-    await insertarDatosVenta(txn, venta);
-    await insertarImagenesVenta(txn, venta);
-  });
-};
+    await insertSaleLocal(txn, venta);
+    await insertSaleImagenesLocal(txn, venta);
+  };
 
 
-export const obtenerVentas = async (): Promise<Sale[]> => {
-  try {
-    const ventasBase = await db.getAllAsync<Sale>(`SELECT id, name, date, status FROM sale;`);
+export const getSaleLocal = async (): Promise<Sale[]> => {
+  const saleList = await db.getAllAsync<Sale>(`SELECT id, name, date, status FROM sale;`);
 
-    for (const venta of ventasBase) {
-      const imagenes = await db.getAllAsync<{ url: string }>(
-        `SELECT url FROM sale_images WHERE sale_id = ?;`,
-        [venta.id]
-      );
-      venta.images = imagenes.map((img) => ({ url: img.url }));
-    }
-
-    return ventasBase;
-  } catch (error) {
-    console.error(error);
-    return [];
+  for (const venta of saleList) {
+    const images = await db.getAllAsync<{ url: string }>(
+      `SELECT url FROM sale_images WHERE sale_id = ?;`,
+      [venta.id]
+    );
+    venta.images = images.map((img) => ({ url: img.url }));
   }
+
+  return saleList;
 };
 
-export const obtenerImagenPrincipalPorArticulo = async (
-  articulo_id: number
-): Promise<string | null> => {
-  try {
+
+export const getFirtImagesByProduct = async (articulo_id: number): Promise<string | null> => {
     const database = getDB();
     const imagenPrincipal = await database.getFirstAsync<{ ruta_local: string }>(
       `SELECT ruta_local FROM articulos_imagenes WHERE articulo_id = ? LIMIT 1;`,
       [articulo_id]
     );
     return imagenPrincipal ? imagenPrincipal.ruta_local : null;
-  } catch (error) {
-    console.error('Error al obtener imagen principal:', error);
-    return null;
-  }
 };
+
 
 type ImagenConId = {
   imagen_id: number;
