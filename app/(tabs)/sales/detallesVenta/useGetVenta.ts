@@ -1,13 +1,13 @@
-import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { obtenerDetallesVenta } from "app/Database/database";
-import { Sale } from "../../../../Types/sales"; 
+import { useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { obtenerDetallesVenta } from 'app/Database/database';
+import { Sale } from '../../../../Types/sales';
 
 export function useGetVenta() {
   const { id } = useLocalSearchParams();
   const [venta, setVenta] = useState<Sale | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error,setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const cargarVenta = async () => {

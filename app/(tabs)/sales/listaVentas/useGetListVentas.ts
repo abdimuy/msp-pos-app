@@ -12,7 +12,7 @@ export function useGetListVentas() {
     try {
       const datos = await obtenerVentas();
       setListaVentas(datos);
-    }catch (e:any){
+    } catch (e: any) {
       setError(e.message || 'Error al cargar ventas');
     } finally {
       setLoading(false);
@@ -23,5 +23,5 @@ export function useGetListVentas() {
     cargarListaVentas();
   }, []);
 
-  return { listaVentas, loading,error, recargar: cargarListaVentas };
+  return { listaVentas, loading, error, recargar: cargarListaVentas };
 }
