@@ -14,4 +14,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       appId: process.env.FIREBASE_APP_ID,
     },
   },
+    android: {
+    config: {
+      googleMaps: {
+        apiKey: process.env.GOOGLE_MAPS_API_KEY,
+      },
+    },
+  },
+  ios: {
+    config: {
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+    },
+  },
 });

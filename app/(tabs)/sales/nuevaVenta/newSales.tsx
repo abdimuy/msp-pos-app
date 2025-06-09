@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import {
@@ -14,12 +14,14 @@ import {
 } from 'react-native';
 import { Feather, AntDesign, Entypo } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
-import { styles } from './_newSales.styles'
+import { styles } from './_newSales.styles';
 import { Boton } from '../../../../Componentes/Boton/boton';
 import { Link, useRouter } from 'expo-router';
-import { Sale } from 'Types/sales'
+import { Sale } from 'Types/sales';
 import { insertarVenta } from 'app/Database/database';
-import uuid from 'react-native-uuid'
+import uuid from 'react-native-uuid';
+import * as Location from 'expo-location';
+import MapView, { Marker } from 'react-native-maps';
 
 export default function RegistrarCliente() {
   const [nombre, setNombre] = useState('');
@@ -32,8 +34,62 @@ export default function RegistrarCliente() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const [latitud, setLatitud] = useState('');
+  const [longitud, setLongitud] = useState('');
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [direccion, setDireccion] = useState('');
 
   const nombreInvalido = nombreTocado && nombre.trim() === '';
+
+  useEffect(() => {
+    let subscriber: Location.LocationSubscription | null = null;
+
+    const initLocation = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permiso denegado para acceder a la ubicación');
+        return;
+      }
+
+      subscriber = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.Highest,
+          distanceInterval:5
+        },
+        async (location) => {
+          setLocation(location);
+          setLatitud(location.coords.latitude.toString());
+          setLongitud(location.coords.longitude.toString());
+
+            // Geocodificación inversa
+          const address = await Location.reverseGeocodeAsync({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
+
+          if (address.length > 0) {
+            const ubicacion = address[0];
+            setDireccion(`${ubicacion.street} ${ubicacion.streetNumber}, ${ubicacion.city}, ${ubicacion.region}, ${ubicacion.country}`);
+            console.log('Dirección:', `${ubicacion.street},${ubicacion.streetNumber}, ${ubicacion.city}, ${ubicacion.region}, ${ubicacion.country}`);
+          }
+        }
+      );
+    };
+
+    initLocation();
+
+    return () => {
+      if (subscriber) subscriber.remove();
+    };
+  }, []);
+
+  let text = 'Waiting..';
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
+  }
 
   const tomarFoto = async () => {
     if (cameraRef.current) {
@@ -43,7 +99,6 @@ export default function RegistrarCliente() {
     }
   };
   const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
-
 
   const abrirSelectorFuente = () => {
     setMostrarSelectorFuente(true);
@@ -85,20 +140,21 @@ export default function RegistrarCliente() {
       name: nombre,
       date: new Date().toISOString(),
       status: 0,
-      images: fotosUris.map(url => ({ url })),
+      latitud: latitud,
+      longitud: longitud,
+      images: fotosUris.map((url) => ({ url })),
     };
     await insertarVenta(nuevaVenta);
     setNombre('');
     setFotosUris([]);
     setIsLoading(false);
-    router.replace('/(tabs)/sales/listaVentas/listSale')
+    router.replace('/(tabs)/sales/listaVentas/listSale');
   };
-
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      behavior={Platform.OS === 'ios' ? 'padding' : "height"}>
       {mostrarCamara ? (
         <CameraView ref={cameraRef} style={styles.camera} facing={facing} enableTorch={false}>
           <View style={styles.cameraButtons}>
@@ -135,21 +191,46 @@ export default function RegistrarCliente() {
             <Text style={styles.addButtonText}>Agregar fotos</Text>
           </TouchableOpacity>
 
-          {/* GALERÍA MINIATURAS */}
-          {fotosUris.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-              {fotosUris.map((uri, index) => (
-                <TouchableOpacity key={index} onPress={() => setImagenSeleccionada(uri)}>
-                  <View style={styles.thumbWrapper}>
-                    <Image source={{ uri }} style={styles.thumbnail} />
-                    <TouchableOpacity style={styles.deleteIcon} onPress={() => eliminarFoto(index)}>
-                      <AntDesign name="closecircle" size={16} color="red" />
-                    </TouchableOpacity>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
+          <View style={{ flexGrow: 1, maxHeight: 500 }}>
+            {/* GALERÍA MINIATURAS */}
+            {fotosUris.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={true} style={styles.scrollView}>
+                {fotosUris.map((uri, index) => (
+                  <TouchableOpacity key={index} onPress={() => setImagenSeleccionada(uri)}>
+                    <View style={styles.thumbWrapper}>
+                      <Image source={{ uri }} style={styles.thumbnail} />
+                      <TouchableOpacity style={styles.deleteIcon} onPress={() => eliminarFoto(index)}>
+                        <AntDesign name="closecircle" size={16} color="red" />
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+
+            <View>
+              <Text style={{paddingBottom:10}}>Agregar Ubicación</Text>
+              <MapView
+              style={styles.map}
+                initialRegion={{
+                  latitude:location ? location.coords.latitude : 0,
+                  longitude: location ? location.coords.longitude : 0,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.04,
+                }}>
+                {location && (
+                  <Marker
+                    coordinate={{
+                      latitude: location.coords.latitude,
+                      longitude: location.coords.longitude,
+                    }}
+                    title="Tu ubicación"
+                  />
+                )}
+              </MapView>
+              <Text>{direccion}</Text>
+            </View>
+          </View>
 
           <ImageViewing
             images={[{ uri: imagenSeleccionada || '' }]}
@@ -158,8 +239,7 @@ export default function RegistrarCliente() {
             onRequestClose={() => setImagenSeleccionada(null)}
             swipeToCloseEnabled
           />
-
-          {/* BOTÓN SIGUIENTE */}
+                {/* BOTÓN SIGUIENTE */}
           <View style={styles.contenedor}>
             <Boton
               onPress={handleSiguiente}
@@ -169,11 +249,10 @@ export default function RegistrarCliente() {
               variant="primary"
               size="large"
             />
-            
+
             <Link href="/" asChild>
               <Button title="Atrás" onPress={() => {}} />
             </Link>
-
           </View>
         </ScrollView>
       )}
@@ -205,6 +284,6 @@ export default function RegistrarCliente() {
         </View>
       )}
     </KeyboardAvoidingView>
+    
   );
 }
-

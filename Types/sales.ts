@@ -3,5 +3,7 @@ export interface Sale {
   name: string;
   date: string; 
   status: number; // 0 o 1
+  latitud: string;
+  longitud: string;
   images: { id?: number; url: string }[];
 }

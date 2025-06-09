@@ -25,6 +25,8 @@ export default function detallesDeVentas() {
             }).format(new Date(venta.date))}hrs
           </Text>
           <Text>Estado: {venta.status === 1 ? 'Enviado' : 'Pendiente'}</Text>
+          <Text>Latitud: {venta.latitud}</Text>
+          <Text>Longitud: {venta.longitud}</Text>
           <Text style={styles.subtitulos}>Imágenes:</Text>
           {venta.images?.map((img, index) => (
             <Image
