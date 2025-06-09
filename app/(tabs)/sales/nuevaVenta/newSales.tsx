@@ -15,10 +15,10 @@ import {
 import { Feather, AntDesign, Entypo } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
 import { styles } from './_newSales.styles';
-import { Boton } from '../../../../Componentes/Boton/boton';
+import { Boton } from '../../../../componentes/boton/Boton';
 import { Link, useRouter } from 'expo-router';
-import { Sale } from 'Types/sales';
-import { insertarVenta } from 'app/Database/database';
+import { Sale } from 'type/Sales';
+import { insertarVenta } from 'app/database/database';
 import uuid from 'react-native-uuid';
 
 export default function RegistrarCliente() {

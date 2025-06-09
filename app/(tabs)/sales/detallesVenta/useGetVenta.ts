@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { obtenerDetallesVenta } from 'app/Database/database';
-import { Sale } from '../../../../Types/sales';
+import { obtenerDetallesVenta } from 'app/database/database';
+import { Sale } from '../../../../type/Sales';
 
 export function useGetVenta() {
   const { id } = useLocalSearchParams();

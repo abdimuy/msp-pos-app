@@ -3,9 +3,9 @@ import {
   insertarProductos,
   obtenerProductos,
   obtenerImagenPrincipalPorArticulo,
-} from '../Database/database';
+} from '../database/database';
 import api from '../api';
-import { ProductoConImagen } from '../../Types/Producto';
+import { ProductoConImagen } from '../../type/Producto';
 
 export function useGetProductos() {
   const [productos, setProductos] = useState<ProductoConImagen[]>([]);

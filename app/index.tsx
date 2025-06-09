@@ -1,13 +1,13 @@
 import { Text, View, Alert } from 'react-native';
-import { useGetProductos } from './Productos/useGetProductos';
+import { useGetProductos } from './productos/useGetProductos';
 import { useEffect, useState } from 'react';
 import { Link } from 'expo-router';
-import { Boton } from '../Componentes/Boton/boton';
-import { getImage } from '../src/services/getImage';
+import { Boton } from '../componentes/boton/Boton';
+import { getImageApi } from '../src/services/getImageApi';
 import {
   contarImagenesNuevas,
   sincronizarImagenesNuevasPorProducto,
-} from '../src/services/SincronizarImagenes';
+} from '../src/services/sincronizarImagenes';
 
 export default function Home() {
   const { actualizarDatosProductos, error } = useGetProductos();
@@ -40,7 +40,7 @@ export default function Home() {
       //Llama a la funcion.
       await actualizarDatosProductos();
       //Obtiene el array de las url y las guarda
-      const listaImagenesProductos = await getImage();
+      const listaImagenesProductos = await getImageApi();
       if (!listaImagenesProductos || !Array.isArray(listaImagenesProductos)) return;
 
       const { totalImagenesNuevas, imagenesNuevasPorProducto } =

@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
-import { Producto } from '../../Types/Producto';
-import { Sale } from '../../Types/sales';
+import { Producto } from '../../type/Producto';
+import { Sale } from '../../type/Sales';
 
 let db: SQLite.SQLiteDatabase;
 
@@ -48,7 +48,6 @@ export const initDB = async (): Promise<void> => {
     );
 
     await almacenarEsquemasIniciales();
-    
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
     throw error;
@@ -62,59 +61,63 @@ export const getDB = (): SQLite.SQLiteDatabase => {
   return db;
 };
 
-export const insertarProductos = async (productos: Producto[]): Promise<void> => {
-  try {
-    const database = getDB();
-    await database.runAsync('DELETE FROM productos;');
+export const eliminarTodosLosProductos = async (): Promise<void> => {
+  const db = getDB();
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    await txn.execAsync('DELETE FROM productos;');
+  });
+};
+
+export const insertarListaDeProductos = async (productos: Producto[]): Promise<void> => {
+  const db = getDB();
+  await db.withExclusiveTransactionAsync(async (txn) => {
     for (const p of productos) {
-      await database.runAsync(
-        `INSERT INTO productos 
-          (ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO) 
-          VALUES (?, ?, ?, ?);`,
+      await txn.runAsync(
+        `INSERT INTO productos (ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO) VALUES (?, ?, ?, ?);`,
         [p.ARTICULO_ID, p.ARTICULO, p.EXISTENCIAS, p.PRECIO]
       );
     }
-  } catch (error) {
-    console.error(error);
-  }
+  });
 };
 
 export const obtenerProductos = async (): Promise<Producto[]> => {
-  try {
-    const database = getDB();
-    const productos = await database.getAllAsync<Producto>(
-      `SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;`
+  const db = getDB();
+  let productos: Producto[] = [];
+
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    productos = await txn.getAllAsync(
+      'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;'
     );
-    return productos;
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
+  });
+  return productos;
 };
 
 // Incerta ventas en base de datos
-export const insertarVenta = async (venta: Sale): Promise<void> => {
-  try {
-    //Guarda los datos String en la tabla sale
-    
-    await db.runAsync(`INSERT INTO sale (id, name, date, status) VALUES (?, ?, ?, ?);`, [
-      venta.id,
-      venta.name,
-      venta.date,
-      venta.status,
-    ]);
+const insertarDatosVenta = async (txn: any, venta: Sale): Promise<void> => {
+  await txn.runAsync(
+    `INSERT INTO sale (id, name, date, status) VALUES (?, ?, ?, ?);`,
+    [venta.id, venta.name, venta.date, venta.status]
+  );
+};
 
-    // Guarda las imagenes capturadas
-    for (const img of venta.images) {
-      await db.runAsync(`INSERT INTO sale_images (sale_id, url) VALUES (?, ?);`, [
-        venta.id,
-        img.url,
-      ]);
-    }
-  } catch (error) {
-    console.error(error);
+const insertarImagenesVenta = async (txn: any, venta: Sale): Promise<void> => {
+  for (const img of venta.images) {
+    await txn.runAsync(
+      `INSERT INTO sale_images (sale_id, url) VALUES (?, ?);`,
+      [venta.id, img.url]
+    );
   }
 };
+
+export const insertarVenta = async (venta: Sale): Promise<void> => {
+  const db = getDB();
+
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    await insertarDatosVenta(txn, venta);
+    await insertarImagenesVenta(txn, venta);
+  });
+};
+
 
 export const obtenerVentas = async (): Promise<Sale[]> => {
   try {

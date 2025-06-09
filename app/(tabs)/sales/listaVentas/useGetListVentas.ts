@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { obtenerVentas } from 'app/Database/database';
-import { Sale } from '../../../../Types/sales'; // Ajusta si tu ruta es diferente
+import { obtenerVentas } from 'app/database/database';
+import { Sale } from '../../../../type/Sales'; // Ajusta si tu ruta es diferente
 
 export function useGetListVentas() {
   const [listaVentas, setListaVentas] = useState<Sale[]>([]);

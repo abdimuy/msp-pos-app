@@ -1,6 +1,6 @@
-import { Imagenes } from '../services/getImage';
+import { Imagenes } from './getImageApi';
 import * as FileSystem from 'expo-file-system';
-import { getDB, insertarRutasImagenesSiNoExisten } from '../../app/Database/database';
+import { getDB, insertarRutasImagenesSiNoExisten } from '../../app/database/database';
 import { Alert } from 'react-native';
 
 // Lee todos lo imagenes_id que esten en mi base de datos

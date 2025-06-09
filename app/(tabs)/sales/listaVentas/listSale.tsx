@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, Alert, TouchableOpacity, Button } from 'react-native';
+import { Text, View, ScrollView, TouchableOpacity, Button } from 'react-native';
 import { styles } from './_listSale.styles';
 import { useRouter, Link } from 'expo-router';
 import { useGetListVentas } from './useGetListVentas';

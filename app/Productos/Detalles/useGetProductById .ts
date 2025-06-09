@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Producto } from '../../../Types/Producto';
-import { obtenerProductoPorId } from '../../Database/database';
+import { Producto } from '../../../type/Producto';
+import { obtenerProductoPorId } from '../../database/database';
 
 export function useGetProductById(id: number) {
   const [producto, setProducto] = useState<Producto | null>(null);

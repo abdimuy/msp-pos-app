@@ -13,7 +13,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import fuzzysort from 'fuzzysort';
 import { Ionicons } from '@expo/vector-icons';
 import { useGetProductos } from './useGetProductos';
-import { ProductoConImagen } from '../../Types/Producto';
+import { ProductoConImagen } from '../../type/Producto';
 import { styles } from './ListaProductos.styles';
 
 export default function ListaProductos() {

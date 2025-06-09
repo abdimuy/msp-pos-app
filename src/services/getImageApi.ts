@@ -6,7 +6,7 @@ export interface Imagenes {
 }
 
 // Obtiene las url de las imagenes y devuelve una matriz
-export async function getImage(): Promise<Imagenes[]> {
+export async function getImageApi(): Promise<Imagenes[]> {
   const res = await axios('http://192.168.0.219:5000/imagenes');
   const data: Imagenes[] = res.data;
   return data;
