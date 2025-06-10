@@ -69,7 +69,7 @@ export const deleteProductsLocal = async (txn: Tx): Promise<void> => {
 };
 
 
-export const insertProductsLocal = async (txn:Tx, productos: Producto[]): Promise<void> => {
+export const insertProductsLocal = async (productos: Producto[], txn:Tx): Promise<void> => {
   for (const p of productos) {
     await txn.runAsync(
       `INSERT INTO productos (ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO) VALUES (?, ?, ?, ?);`,
@@ -87,14 +87,14 @@ export const getProductsLocal = async (txn?: Tx): Promise<Producto[]> => {
 };
 
 
-const insertSaleLocal = async (txn: Tx, venta: Sale): Promise<void> => {
+const insertSaleLocal = async (venta: Sale, txn: Tx): Promise<void> => {
   await txn.runAsync(
     `INSERT INTO sale (id, name, date, status) VALUES (?, ?, ?, ?);`,
     [venta.id, venta.name, venta.date, venta.status]
   );
 };
 
-const insertSaleImagenesLocal = async (txn: Tx, venta: Sale): Promise<void> => {
+const insertSaleImagenesLocal = async (venta: Sale, txn: Tx): Promise<void> => {
   for (const img of venta.images) {
     await txn.runAsync(
       `INSERT INTO sale_images (sale_id, url) VALUES (?, ?);`,
@@ -103,9 +103,9 @@ const insertSaleImagenesLocal = async (txn: Tx, venta: Sale): Promise<void> => {
   }
 };
 
-export const SaveCompleteLocal = async (txn: Tx, venta: Sale): Promise<void> => {
-    await insertSaleLocal(txn, venta);
-    await insertSaleImagenesLocal(txn, venta);
+export const SaveCompleteLocal = async (venta: Sale, txn: Tx): Promise<void> => {
+    await insertSaleLocal(venta, txn);
+    await insertSaleImagenesLocal(venta, txn);
   };
  
 
@@ -141,7 +141,7 @@ type ImageWithId = {
 };
 
 //Inserta en la tabla imagenes las rutas locales de las imágenes asociadas a un producto
-export const insertImagePathsIfNotExistLocal = async (txn: Tx, articulo_id: number, imagenes: ImageWithId[]): Promise<void> => {  
+export const insertImagePathsIfNotExistLocal = async (articulo_id: number, imagenes: ImageWithId[], txn: Tx): Promise<void> => {  
     let newImagesCount  = 0;
 
     for (const { image_id, local_path } of imagenes) {
@@ -171,7 +171,7 @@ export const getImagePathsByProductLocal = async (articulo_id: number, tnx?: Tx)
     return rutasLocales.map((r) => r.ruta_local);
   };
 
-export async function getProductByIdLocal(id: number,txn?: Tx): Promise<Producto | null> {
+export async function getProductByIdLocal(id: number, txn?: Tx): Promise<Producto | null> {
   const database = txn ?? db;
   const productData = await database.getAllAsync<Producto>(
     'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos WHERE ARTICULO_ID = ?',
@@ -182,7 +182,7 @@ export async function getProductByIdLocal(id: number,txn?: Tx): Promise<Producto
 }
 
 
-export const getSaleDetailsLocal = async (id: number ,txn?: Tx): Promise<Sale | null> => {
+export const getSaleDetailsLocal = async (id: number, txn?: Tx): Promise<Sale | null> => {
   const database = txn ?? db;
 
   const details = await database.getFirstAsync<Sale>(
