@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getSaleLocal } from 'app/database/database';
+import { getSaleLocal } from '../../../../src/services/ventas/getSaleLocal/getSaleLocal';
 import { Sale } from '../../../../type/Sales'; // Ajusta si tu ruta es diferente
 
 export function useGetListVentas() {

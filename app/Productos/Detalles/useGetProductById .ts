@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Producto } from '../../../type/Producto';
-import { getProductByIdLocal } from '../../database/database';
+import { getProductByIdLocal } from '../../../src/services/products/getProductByIdLocal/getProductByIdLocal';
 
 export function useGetProductById(id: number) {
   const [producto, setProducto] = useState<Producto | null>(null);

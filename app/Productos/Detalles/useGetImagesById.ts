@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getImagePathsByProductLocal } from '../../database/database';
+import { getImagePathsByProductLocal } from '../../../src/services/products/getImagePathsByProductLocal/getImagePathsByProductLocal';
 
 export function useGetImagesById(id: number) {
   const [imagenes, setImagenes] = useState<string[]>([]);

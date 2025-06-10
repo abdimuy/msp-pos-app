@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import {
-  insertProductsLocal,
-  getProductsLocal,
-  getFirtImagesByProductLocal,
-} from '../database/database';
+import { getProductsLocal } from '../../src/services/products/getProductsLocal/getProductsLocal';
+import { insertProductsLocal } from '../../src/services/products/insertProductsLocal/insertProductsLocal';
+import { getFirtImagesByProductLocal } from '../../src/services/products/getFirtImagesByProductLocal/getFirtImagesByProductLocal'
 import api from '../api';
 import { ProductoConImagen } from '../../type/Producto';
 

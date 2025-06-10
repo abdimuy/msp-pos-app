@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { getSaleDetailsLocal } from 'app/database/database';
+import { getSaleDetailsLocal } from '../../../../src/services/ventas/getSaleDetailsLocal/getSaleDetailsLocal';
 import { Sale } from '../../../../type/Sales';
 
 export function useGetVenta() {
