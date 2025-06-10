@@ -46,7 +46,7 @@ export function useGetProductos() {
         : [];
 
       // Guardar productos en la base local
-      await insertProductsLocal(txn, nuevosProductos);
+      await insertProductsLocal(nuevosProductos);
 
       // Luego recargar productos con imágenes desde la BD local
       await cargarProductosConImagenes();

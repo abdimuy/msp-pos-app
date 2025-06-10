@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { getSaleDetails } from 'app/database/database';
+import { getSaleDetailsLocal } from 'app/database/database';
 import { Sale } from '../../../../type/Sales';
 
 export function useGetVenta() {
@@ -17,7 +17,7 @@ export function useGetVenta() {
       setError(null);
 
       try {
-        const data = await getSaleDetails (Number(id));
+        const data = await getSaleDetailsLocal(Number(id));
         setVenta(data);
       } catch (e: any) {
         setError(e.message || 'Error al cargar los detalles de la venta');
