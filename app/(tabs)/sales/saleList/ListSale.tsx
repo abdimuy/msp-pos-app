@@ -1,10 +1,10 @@
 import { Text, View, ScrollView, TouchableOpacity, Button } from 'react-native';
 import { styles } from './_listSale.styles';
 import { useRouter, Link } from 'expo-router';
-import { useGetListVentas } from './useGetListVentas';
+import { useGetListSale } from './useGetListSale';
 
 export default function listaVentas() {
-  const { listaVentas, loading, error } = useGetListVentas();
+  const { listaVentas, loading, error } = useGetListSale();
 
   const router = useRouter();
 
@@ -20,7 +20,7 @@ export default function listaVentas() {
             <TouchableOpacity
               onPress={() =>
                 router.push({
-                  pathname: '/(tabs)/sales/detallesVenta/[id]',
+                  pathname: '/(tabs)/sales/detailsSale/[id]',
                   params: { id: venta.id },
                 })
               }>

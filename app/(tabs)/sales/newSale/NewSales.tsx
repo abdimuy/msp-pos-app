@@ -15,10 +15,10 @@ import {
 import { Feather, AntDesign, Entypo } from '@expo/vector-icons';
 import ImageViewing from 'react-native-image-viewing';
 import { styles } from './_newSales.styles';
-import { Boton } from '../../../../componentes/boton/Boton';
+import { Boton } from '../../../../components/boton/Boton';
 import { Link, useRouter } from 'expo-router';
-import { Sale } from 'type/Sales';
-import { SaveCompleteLocal } from 'app/database/database';
+import { Sale } from 'type/Sale';
+import { SaveSaleCompleteLocal } from '../../../../src/services/sale/SaveSaleCompleteLocal/SaveSaleCompleteLocal';
 import uuid from 'react-native-uuid';
 
 export default function RegistrarCliente() {
@@ -86,7 +86,7 @@ export default function RegistrarCliente() {
       status: 0,
       images: fotosUris.map((url) => ({ url })),
     };
-    await SaveCompleteLocal(nuevaVenta);
+    await SaveSaleCompleteLocal(nuevaVenta);
     setNombre('');
     setFotosUris([]);
     setIsLoading(false);

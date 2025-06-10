@@ -1,4 +1,5 @@
 import { getDB, Tx } from '../../../../app/database/database'; 
+import * as SQLite from 'expo-sqlite';
 
 type ImageWithId = {
   image_id: number;
@@ -11,7 +12,7 @@ export const insertImagePathsIfNotExistLocal = async (
   txn?: Tx
 ): Promise<void> => {
   const db = getDB();
-  const database = txn ?? db;
+  const database: Tx | SQLite.SQLiteDatabase = txn ?? db;
   let newImagesCount = 0;
 
   for (const { image_id, local_path } of imagenes) {

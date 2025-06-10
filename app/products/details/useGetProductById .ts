@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Producto } from '../../../type/Producto';
+import { Producto } from '../../../type/Products';
 import { getProductByIdLocal } from '../../../src/services/products/getProductByIdLocal/getProductByIdLocal';
 
 export function useGetProductById(id: number) {

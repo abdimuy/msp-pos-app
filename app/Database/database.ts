@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import { storeInitialSchemasLocal } from '../../src/services/ventas/storeInitialSchemasLocal/storeInitialSchemasLocal'
+import { storeInitialSchemasLocal } from '../../src/services/sale/storeInitialSchemasLocal/storeInitialSchemasLocal';
 
 let db: SQLite.SQLiteDatabase;
 
@@ -63,5 +63,3 @@ export const getDB = (): SQLite.SQLiteDatabase => {
   }
   return db;
 };
-
-

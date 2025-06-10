@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { getProductsLocal } from '../../src/services/products/getProductsLocal/getProductsLocal';
 import { insertProductsLocal } from '../../src/services/products/insertProductsLocal/insertProductsLocal';
-import { getFirtImagesByProductLocal } from '../../src/services/products/getFirtImagesByProductLocal/getFirtImagesByProductLocal'
+import { getFirstImageByProductLocal } from '../../src/services/products/getFirstImageByProductLocal/getFirstImageByProductLocal';
 import api from '../api';
-import { ProductoConImagen } from '../../type/Producto';
+import { ProductoConImagen } from '../../type/Products';
 
-export function useGetProductos() {
+export function useGetProducts() {
   const [productos, setProductos] = useState<ProductoConImagen[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export function useGetProductos() {
       // Para cada producto, obtiene la imagen principal y la agrega al objeto producto
       const productosConImagen = await Promise.all(
         productosLocales.map(async (p) => {
-          const ruta = await getFirtImagesByProductLocal(p.ARTICULO_ID);
+          const ruta = await getFirstImageByProductLocal(p.ARTICULO_ID);
           return { ...p, IMAGEN_RUTA: ruta };
         })
       );

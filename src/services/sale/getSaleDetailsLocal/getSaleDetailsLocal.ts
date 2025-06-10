@@ -1,9 +1,10 @@
-import { Sale } from '../../../../type/Sales';
-import { getDB, Tx } from '../../../../app/database/database';  
+import { Sale } from '../../../../type/Sale';
+import { getDB, Tx } from '../../../../app/database/database';
+import * as SQLite from 'expo-sqlite';
 
 export const getSaleDetailsLocal = async (id: number, txn?: Tx): Promise<Sale | null> => {
   const db = getDB();
-  const database = txn ?? db;
+  const database: Tx | SQLite.SQLiteDatabase = txn ?? db;
 
   const details = await database.getFirstAsync<Sale>(
     `SELECT id, name, date, status FROM sale WHERE id = ?`,

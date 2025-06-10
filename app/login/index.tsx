@@ -3,7 +3,7 @@ import { View, TextInput, Image, TouchableOpacity, Text } from 'react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import { useRouter } from 'expo-router';
 import { styles } from './_login.styles';
-import { Boton } from '../../componentes/boton/Boton';
+import { Boton } from '../../components/boton/Boton';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -30,10 +30,8 @@ export default function LoginScreen() {
         setIsLoading(true); // activa el spinner
         await login(email, password);
         router.replace('/');
-        console.log(email, password);
       } catch (error) {
         alert('Correo o contraseña incorrectos');
-        console.log(email, password);
       } finally {
         setIsLoading(false); // desactiva el spinner
       }

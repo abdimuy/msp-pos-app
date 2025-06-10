@@ -1,9 +1,10 @@
 import { getDB, Tx } from '../../../../app/database/database';
 import { getTableSchemasLocal } from '../getTableSchemasLocal/getTableSchemasLocal';
+import * as SQLite from 'expo-sqlite';
 
 export const storeInitialSchemasLocal = async (txn?: Tx): Promise<void> => {
   const db = getDB();
-  const database = txn ?? db;
+  const database: Tx | SQLite.SQLiteDatabase = txn ?? db;
 
   await database.runAsync(`
     CREATE TABLE IF NOT EXISTS esquemas_guardados (

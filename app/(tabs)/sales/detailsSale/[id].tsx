@@ -1,10 +1,10 @@
 import { Text, ScrollView, Image, View, Button } from 'react-native';
-import { styles } from '../listaVentas/_listSale.styles';
-import { useGetVenta } from './useGetVenta';
+import { styles } from '../saleList/_listSale.styles';
+import { useGetSale } from './useGetSale';
 import { Link } from 'expo-router';
 
 export default function detallesDeVentas() {
-  const { venta, loading, error } = useGetVenta();
+  const { venta, loading, error } = useGetSale();
 
   if (loading) {
     return <Text>Cargando...</Text>;
@@ -34,7 +34,7 @@ export default function detallesDeVentas() {
         ))}
       </ScrollView>
 
-      <Link href="/(tabs)/sales/listaVentas/listSale" asChild>
+      <Link href="/(tabs)/sales/saleList/ListSale" asChild>
         <Button title="Atrás" />
       </Link>
     </View>

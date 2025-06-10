@@ -54,7 +54,7 @@ export default function DetalleProducto() {
         </View>
       )}
 
-      <Link href="/productos/ListaProductos" asChild>
+      <Link href="/products/ProductsList" asChild>
         <Button title="Atrás" />
       </Link>
 

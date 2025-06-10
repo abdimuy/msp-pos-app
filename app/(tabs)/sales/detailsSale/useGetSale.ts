@@ -1,9 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { getSaleDetailsLocal } from '../../../../src/services/ventas/getSaleDetailsLocal/getSaleDetailsLocal';
-import { Sale } from '../../../../type/Sales';
+import { getSaleDetailsLocal } from '../../../../src/services/sale/getSaleDetailsLocal/getSaleDetailsLocal';
+import { Sale } from '../../../../type/Sale';
 
-export function useGetVenta() {
+export function useGetSale() {
   const { id } = useLocalSearchParams();
   const [venta, setVenta] = useState<Sale | null>(null);
   const [loading, setLoading] = useState(true);

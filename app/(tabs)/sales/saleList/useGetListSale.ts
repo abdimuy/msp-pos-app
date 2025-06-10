@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getSaleLocal } from '../../../../src/services/ventas/getSaleLocal/getSaleLocal';
-import { Sale } from '../../../../type/Sales'; // Ajusta si tu ruta es diferente
+import { getSaleLocal } from '../../../../src/services/sale/getSaleLocal/getSaleLocal';
+import { Sale } from '../../../../type/Sale'; 
 
-export function useGetListVentas() {
+export function useGetListSale() {
   const [listaVentas, setListaVentas] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -1,8 +1,8 @@
 import { Text, View, Alert } from 'react-native';
-import { useGetProductos } from './productos/useGetProductos';
+import { useGetProducts } from './products/useGetProducts';
 import { useEffect, useState } from 'react';
 import { Link } from 'expo-router';
-import { Boton } from '../componentes/boton/Boton';
+import { Boton } from '../components/boton/Boton';
 import { getImageApi } from '../src/services/getImageApi';
 import {
   contarImagenesNuevas,
@@ -10,7 +10,7 @@ import {
 } from '../src/services/sincronizarImagenes';
 
 export default function Home() {
-  const { actualizarDatosProductos, error } = useGetProductos();
+  const { actualizarDatosProductos, error } = useGetProducts();
   const [loadingActualizar, setLoadingActualizar] = useState(false);
 
   useEffect(() => {
@@ -66,15 +66,15 @@ export default function Home() {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 }}>
       <Text style={{ fontSize: 18, marginBottom: 20 }}>Pantalla de inicio</Text>
 
-      <Link href="/(tabs)/sales/nuevaVenta/NewSales" asChild>
+      <Link href="/(tabs)/sales/newSale/NewSales" asChild>
         <Boton label="Nueva venta" onPress={() => {}} />
       </Link>
 
-      <Link href="/(tabs)/sales/listaVentas/ListSale" asChild>
+      <Link href="/(tabs)/sales/saleList/ListSale" asChild>
         <Boton label="Lista de ventas" onPress={() => {}} />
       </Link>
 
-      <Link href="/productos/ListaProductos" asChild>
+      <Link href="/products/ProductsList" asChild>
         <Boton label="Ver Productos" onPress={() => {}} />
       </Link>
 
