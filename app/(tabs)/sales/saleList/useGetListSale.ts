@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getSaleLocal } from '../../../../src/services/sale/getSaleLocal/getSaleLocal';
+import { getSalesLocal } from '../../../../src/services/sale/getSalesLocal/getSalesLocal';
 import { Sale } from '../../../../type/Sale'; 
 
 export function useGetListSale() {
@@ -10,7 +10,7 @@ export function useGetListSale() {
   const cargarListaVentas = async () => {
     setLoading(true);
     try {
-      const datos = await getSaleLocal();
+      const datos = await getSalesLocal();
       setListaVentas(datos);
     } catch (e: any) {
       setError(e.message || 'Error al cargar ventas');
