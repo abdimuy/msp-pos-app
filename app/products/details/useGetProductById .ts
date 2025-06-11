@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Producto } from '../../../Types/Producto';
-import { obtenerProductoPorId } from '../../Database/database';
+import { Producto } from '../../../type/Products';
+import { getProductByIdLocal } from '../../../src/services/products/getProductByIdLocal/getProductByIdLocal';
 
 export function useGetProductById(id: number) {
   const [producto, setProducto] = useState<Producto | null>(null);
@@ -9,7 +9,7 @@ export function useGetProductById(id: number) {
 
   const obtenerProductoActualizado = useCallback(() => {
     setLoading(true);
-    obtenerProductoPorId(id)
+    getProductByIdLocal(id)
       .then((res) => {
         setProducto(res);
         setError(null);

@@ -12,13 +12,13 @@ import { Link } from 'expo-router';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import fuzzysort from 'fuzzysort';
 import { Ionicons } from '@expo/vector-icons';
-import { useGetProductos } from './useGetProductos';
-import { ProductoConImagen } from '../../Types/Producto';
-import { styles } from './ListaProductos.styles';
+import { useGetProducts } from './useGetProducts';
+import { ProductoConImagen } from '../../type/Products';
+import { styles } from './ProductsList.styles';
 
 export default function ListaProductos() {
   const [filtro, setFiltro] = useState('');
-  const { productos, loading, error } = useGetProductos();
+  const { productos, loading, error } = useGetProducts();
 
   useEffect(() => {
     if (error) {
@@ -79,7 +79,7 @@ function ProductoCard({ item }: { item: ProductoConImagen }) {
   const [errorCarga, setErrorCarga] = useState(false);
 
   return (
-    <Link href={`/Productos/Detalles/${item.ARTICULO_ID}`} asChild>
+    <Link href={`/products/details/${item.ARTICULO_ID}`} asChild>
       <TouchableOpacity activeOpacity={0.9} style={styles.card}>
         {errorCarga ? (
           <View style={[styles.imagen, { justifyContent: 'center', alignItems: 'center' }]}>

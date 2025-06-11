@@ -1,6 +1,7 @@
-import { Imagenes } from '../services/getImage';
+import { Imagenes } from './getImageApi';
 import * as FileSystem from 'expo-file-system';
-import { getDB, insertarRutasImagenesSiNoExisten } from '../../app/Database/database';
+import { getDB } from '../../app/database/database';
+import { insertImagePathsIfNotExistLocal } from '../services/products/insertImagePathsIfNotExistLocal/insertImagePathsIfNotExistLocal'
 import { Alert } from 'react-native';
 
 // Lee todos lo imagenes_id que esten en mi base de datos
@@ -97,7 +98,7 @@ export const sincronizarImagenesNuevasPorProducto = async (
       const imagenesNuevas = imagenesNuevasPorProducto[articuloId];
       if (!imagenesNuevas) continue;
 
-      const rutasLocales: { imagen_id: number; ruta_local: string }[] = [];
+      const rutasLocales: { image_id: number; local_path: string }[] = [];
 
       //Ejecuta en paralelo de todas las descargas de imágenes de ese producto usando Promise.all
       const imagenesGuardadas = await Promise.all(
@@ -113,13 +114,13 @@ export const sincronizarImagenesNuevasPorProducto = async (
 
       for (const res of imagenesGuardadas) {
         if (res.ruta) {
-          rutasLocales.push({ imagen_id: res.id, ruta_local: res.ruta });
+          rutasLocales.push({ image_id: res.id, local_path: res.ruta });
           pesoTotalBytes += res.tamano;
         }
       }
 
       if (rutasLocales.length > 0) {
-        await insertarRutasImagenesSiNoExisten(articuloId, rutasLocales);
+        await insertImagePathsIfNotExistLocal(articuloId, rutasLocales);
         console.log(
           `Producto ${articuloId}: ${rutasLocales.length} nuevas imágenes sincronizadas.`
         );

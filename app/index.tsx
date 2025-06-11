@@ -1,16 +1,16 @@
 import { Text, View, Alert } from 'react-native';
-import { useGetProductos } from './Productos/useGetProductos';
+import { useGetProducts } from './products/useGetProducts';
 import { useEffect, useState } from 'react';
 import { Link } from 'expo-router';
-import { Boton } from '../Componentes/Boton/boton';
-import { getImage } from '../src/services/getImage';
+import { Boton } from '../components/boton/Boton';
+import { getImageApi } from '../src/services/getImageApi';
 import {
   contarImagenesNuevas,
   sincronizarImagenesNuevasPorProducto,
-} from '../src/services/SincronizarImagenes';
+} from '../src/services/sincronizarImagenes';
 
 export default function Home() {
-  const { actualizarDatosProductos, error } = useGetProductos();
+  const { actualizarDatosProductos, error } = useGetProducts();
   const [loadingActualizar, setLoadingActualizar] = useState(false);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function Home() {
       //Llama a la funcion.
       await actualizarDatosProductos();
       //Obtiene el array de las url y las guarda
-      const listaImagenesProductos = await getImage();
+      const listaImagenesProductos = await getImageApi();
       if (!listaImagenesProductos || !Array.isArray(listaImagenesProductos)) return;
 
       const { totalImagenesNuevas, imagenesNuevasPorProducto } =
@@ -66,15 +66,15 @@ export default function Home() {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 }}>
       <Text style={{ fontSize: 18, marginBottom: 20 }}>Pantalla de inicio</Text>
 
-      <Link href="/(tabs)/sales/nuevaVenta/newSales" asChild>
+      <Link href="/(tabs)/sales/newSale/NewSales" asChild>
         <Boton label="Nueva venta" onPress={() => {}} />
       </Link>
 
-      <Link href="/(tabs)/sales/listaVentas/listSale" asChild>
+      <Link href="/(tabs)/sales/saleList/ListSale" asChild>
         <Boton label="Lista de ventas" onPress={() => {}} />
       </Link>
 
-      <Link href="/Productos/ListaProductos" asChild>
+      <Link href="/products/ProductsList" asChild>
         <Boton label="Ver Productos" onPress={() => {}} />
       </Link>
 
