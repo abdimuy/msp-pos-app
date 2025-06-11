@@ -17,11 +17,13 @@ import ImageViewing from 'react-native-image-viewing';
 import { styles } from './_newSales.styles';
 import { Boton } from '../../../../Componentes/Boton/boton';
 import { Link, useRouter } from 'expo-router';
-import { Sale } from 'Types/sales';
+import { SaleAndImages } from 'Types/Sale';
 import { insertarVenta } from 'app/Database/database';
 import uuid from 'react-native-uuid';
 import * as Location from 'expo-location';
 import MapView, { Marker } from 'react-native-maps';
+import { watchLocation, getCurrentPosition } from '../../../../src/utils/getLocation';
+import { useGetPermission } from '../hooks/useGetPermission';
 
 export default function RegistrarCliente() {
   const [nombre, setNombre] = useState('');
@@ -31,7 +33,6 @@ export default function RegistrarCliente() {
   const [mostrarSelectorFuente, setMostrarSelectorFuente] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
   const cameraRef = useRef<CameraView | null>(null);
-  const [permission, requestPermission] = useCameraPermissions();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [latitud, setLatitud] = useState('');
@@ -39,57 +40,43 @@ export default function RegistrarCliente() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [direccion, setDireccion] = useState('');
+  const { hasPermission, requestLocationPermission } = useGetPermission();
 
   const nombreInvalido = nombreTocado && nombre.trim() === '';
 
   useEffect(() => {
-    let subscriber: Location.LocationSubscription | null = null;
+    requestLocationPermission();
+  }, []);
+  
+  useEffect(() => {
+    let subscription: Location.LocationSubscription | null = null;
 
-    const initLocation = async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
+    const iniciarUbicacion = async () => {
+      if (hasPermission === null) return; // Esperar a que se cargue el permiso
+      if (!hasPermission) {
         setErrorMsg('Permiso denegado para acceder a la ubicación');
         return;
       }
 
-      subscriber = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.Highest,
-          distanceInterval:5
+      const cancelFn = await watchLocation({
+        onUpdate: (ubicacion) => {
+          setLatitud(ubicacion.latitud);
+          setLongitud(ubicacion.longitud);
+          setDireccion(ubicacion.direccion);
+          setLocation(ubicacion.location);
         },
-        async (location) => {
-          setLocation(location);
-          setLatitud(location.coords.latitude.toString());
-          setLongitud(location.coords.longitude.toString());
+        onError: (error) => setErrorMsg(error),
+      });
 
-            // Geocodificación inversa
-          const address = await Location.reverseGeocodeAsync({
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          });
-
-          if (address.length > 0) {
-            const ubicacion = address[0];
-            setDireccion(`${ubicacion.street} ${ubicacion.streetNumber}, ${ubicacion.city}, ${ubicacion.region}, ${ubicacion.country}`);
-            console.log('Dirección:', `${ubicacion.street},${ubicacion.streetNumber}, ${ubicacion.city}, ${ubicacion.region}, ${ubicacion.country}`);
-          }
-        }
-      );
+      subscription = cancelFn;
     };
 
-    initLocation();
+    iniciarUbicacion();
 
     return () => {
-      if (subscriber) subscriber.remove();
+      if (subscription) subscription.remove();
     };
-  }, []);
-
-  let text = 'Waiting..';
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
-    text = JSON.stringify(location);
-  }
+  }, [hasPermission]);
 
   const tomarFoto = async () => {
     if (cameraRef.current) {
@@ -123,25 +110,24 @@ export default function RegistrarCliente() {
     setFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
 
-  if (!permission) return <View />;
-  if (!permission.granted) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.message}>Necesitamos permisos para usar la cámara</Text>
-        <Button onPress={requestPermission} title="Conceder permiso" />
-      </View>
-    );
-  }
-
   const handleSiguiente = async () => {
     setIsLoading(true);
-    const nuevaVenta: Sale = {
+
+    const ubicacion = await getCurrentPosition();
+
+    if (!ubicacion) {
+      alert('No se puede tener la ubicacion');
+      setIsLoading(false);
+      return;
+    }
+
+    const nuevaVenta: SaleAndImages = {
       id: uuid.v4(),
       name: nombre,
       date: new Date().toISOString(),
       status: 0,
-      latitud: latitud,
-      longitud: longitud,
+      latitud: ubicacion.latitud,
+      longitud: ubicacion.longitud,
       images: fotosUris.map((url) => ({ url })),
     };
     await insertarVenta(nuevaVenta);
@@ -154,7 +140,7 @@ export default function RegistrarCliente() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : "height"}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {mostrarCamara ? (
         <CameraView ref={cameraRef} style={styles.camera} facing={facing} enableTorch={false}>
           <View style={styles.cameraButtons}>
@@ -194,12 +180,17 @@ export default function RegistrarCliente() {
           <View style={{ flexGrow: 1, maxHeight: 500 }}>
             {/* GALERÍA MINIATURAS */}
             {fotosUris.length > 0 && (
-              <ScrollView horizontal showsHorizontalScrollIndicator={true} style={styles.scrollView}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={true}
+                style={styles.scrollView}>
                 {fotosUris.map((uri, index) => (
                   <TouchableOpacity key={index} onPress={() => setImagenSeleccionada(uri)}>
                     <View style={styles.thumbWrapper}>
                       <Image source={{ uri }} style={styles.thumbnail} />
-                      <TouchableOpacity style={styles.deleteIcon} onPress={() => eliminarFoto(index)}>
+                      <TouchableOpacity
+                        style={styles.deleteIcon}
+                        onPress={() => eliminarFoto(index)}>
                         <AntDesign name="closecircle" size={16} color="red" />
                       </TouchableOpacity>
                     </View>
@@ -209,11 +200,11 @@ export default function RegistrarCliente() {
             )}
 
             <View>
-              <Text style={{paddingBottom:10}}>Agregar Ubicación</Text>
+              <Text style={{ paddingBottom: 10 }}>Agregar Ubicación</Text>
               <MapView
-              style={styles.map}
+                style={styles.map}
                 initialRegion={{
-                  latitude:location ? location.coords.latitude : 0,
+                  latitude: location ? location.coords.latitude : 0,
                   longitude: location ? location.coords.longitude : 0,
                   latitudeDelta: 0.01,
                   longitudeDelta: 0.04,
@@ -239,7 +230,7 @@ export default function RegistrarCliente() {
             onRequestClose={() => setImagenSeleccionada(null)}
             swipeToCloseEnabled
           />
-                {/* BOTÓN SIGUIENTE */}
+          {/* BOTÓN SIGUIENTE */}
           <View style={styles.contenedor}>
             <Boton
               onPress={handleSiguiente}
@@ -284,6 +275,5 @@ export default function RegistrarCliente() {
         </View>
       )}
     </KeyboardAvoidingView>
-    
   );
 }

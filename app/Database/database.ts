@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { Producto } from '../../Types/Producto';
-import { Sale } from '../../Types/sales';
+import { Sale, SaleAndImages, SaleWithImages } from '../../Types/Sale';
 
 let db: SQLite.SQLiteDatabase;
 
@@ -40,6 +40,7 @@ export const initDB = async (): Promise<void> => {
   }
 };
 
+
 const getDB = (): SQLite.SQLiteDatabase => {
   if (!db) {
     throw new Error('La base de datos no está inicializada. Llama a initDB() primero.');
@@ -78,18 +79,14 @@ export const obtenerProductos = async (): Promise<Producto[]> => {
 };
 
 // Incerta ventas en base de datos
-export const insertarVenta = async (venta: Sale): Promise<void> => {
+export const insertarVenta = async (venta: SaleAndImages): Promise<void> => {
   try {
-    const db = getDB()
+    const db = getDB();
     //Guarda los datos String en la tabla sale
-    await db.runAsync(`INSERT INTO sale (id, name, date, status, latitud, longitud) VALUES (?, ?, ?, ?, ?, ?);`, [
-      venta.id,
-      venta.name,
-      venta.date,
-      venta.status,
-      venta.latitud,
-      venta.longitud,
-    ]);
+    await db.runAsync(
+      `INSERT INTO sale (id, name, date, status, latitud, longitud) VALUES (?, ?, ?, ?, ?, ?);`,
+      [venta.id, venta.name, venta.date, venta.status, venta.latitud, venta.longitud]
+    );
 
     // Guarda las imagenes capturadas
     for (const img of venta.images) {
@@ -103,30 +100,36 @@ export const insertarVenta = async (venta: Sale): Promise<void> => {
   }
 };
 
-export const obtenerVentas = async (): Promise<Sale[]> => {
+export const obtenerVentas = async (): Promise<SaleAndImages[]> => {
   try {
-    const ventasBase = await db.getAllAsync<Sale>(`SELECT id, name, date, status FROM sale;`);
+    const ventasBase = await db.getAllAsync<Sale>(`SELECT id, name, date, status, latitud, longitud FROM sale;`);
+
+    const ventasConImagenes: SaleAndImages[] = [];
 
     for (const venta of ventasBase) {
       const imagenes = await db.getAllAsync<{ url: string }>(
         `SELECT url FROM sale_images WHERE sale_id = ?;`,
         [venta.id]
       );
-      venta.images = imagenes.map((img) => ({ url: img.url }));
+
+      ventasConImagenes.push({
+        ...venta,
+        images: imagenes.map((img) => ({ url: img.url })),
+      });
     }
 
-    return ventasBase;
+    return ventasConImagenes;
   } catch (error) {
     console.error(error);
     return [];
   }
 };
 
-export const obtenerDetallesVenta = async (id: string): Promise<Sale | null> => {
+export const obtenerDetallesVenta = async (id: string): Promise<SaleAndImages | null> => {
   try {
     const db = getDB();
 
-    const detalles = await db.getFirstAsync<Sale>(
+    const detalles = await db.getFirstAsync<SaleAndImages>(
       `SELECT id, name, date, status, latitud, longitud FROM sale WHERE id = ?`,
       [id]
     );
@@ -134,13 +137,16 @@ export const obtenerDetallesVenta = async (id: string): Promise<Sale | null> => 
     if (!detalles) return null;
 
     const detalles_img = await db.getAllAsync<{ url: string }>(
-      `SELECT url FROM sale_images WHERE sale_id = ?`,
+      `SELECT id, url FROM sale_images WHERE sale_id = ?`,
       [id]
     );
 
-    detalles.images = detalles_img.map((img) => ({ url: img.url }));
+    const ventaConImagenes: SaleAndImages = {
+      ...detalles,
+      images: detalles_img,
+    };
 
-    return detalles;
+    return ventaConImagenes;
   } catch (error) {
     console.error(error);
     return null;
@@ -277,7 +283,6 @@ const reemplazarTabla = async (nombreTabla: string, nuevoEsquema: string): Promi
     console.error(`❌ Error al reemplazar la tabla ${nombreTabla}:`, error);
   }
 };
-
 
 // Guarda solo el último esquema por tabla
 const actualizarEsquemaGuardado = async (nombreTabla: string): Promise<void> => {

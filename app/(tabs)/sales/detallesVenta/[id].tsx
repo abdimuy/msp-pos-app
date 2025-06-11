@@ -1,6 +1,6 @@
 import { Text, ScrollView, Image, View } from "react-native";
 import { styles } from '../listaVentas/_listSale.styles'
-import { useGetVenta } from "./useGetVenta";
+import { useGetVenta } from "../hooks/useGetVenta";
 
 export default function detallesDeVentas() {
     const {venta , loading, error} = useGetVenta();    
