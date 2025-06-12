@@ -1,21 +1,34 @@
 import * as SQLite from 'expo-sqlite';
 import { Producto } from '../../Types/Producto';
-import { Sale, SaleAndImages, SaleWithImages } from '../../Types/Sale';
+import { Sale, SaleAndImages, SaleImage, SaleWithSavedImages } from '../../Types/Sale';
 
 let db: SQLite.SQLiteDatabase;
 
 export const initDB = async (): Promise<void> => {
   try {
     db = await SQLite.openDatabaseAsync('productos.db');
+
     await db.execAsync(`
-        PRAGMA journal_mode = WAL;
-        CREATE TABLE IF NOT EXISTS productos (
-          ARTICULO_ID INTEGER PRIMARY KEY NOT NULL,
-          ARTICULO TEXT NOT NULL,
-          EXISTENCIAS INTEGER NOT NULL,
-          PRECIO REAL NOT NULL
-        );
-      `);
+      PRAGMA journal_mode = WAL;
+      CREATE TABLE IF NOT EXISTS productos (
+        ARTICULO_ID INTEGER PRIMARY KEY NOT NULL,
+        ARTICULO TEXT NOT NULL, 
+        EXISTENCIAS INTEGER NOT NULL,
+        PRECIO REAL NOT NULL
+      );
+    `);
+
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS articulos_imagenes (
+        imagen_id INTEGER PRIMARY KEY,
+        articulo_id INTEGER NOT NULL,
+        ruta_local TEXT NOT NULL UNIQUE,
+        FOREIGN KEY (articulo_id) REFERENCES productos(ARTICULO_ID)
+      );
+    `);
+
+    console.log('Base de datos inicializada correctamente.');
+    
     await db.execAsync(
       `CREATE TABLE IF NOT EXISTS sale (
           id VARCHAR(50) PRIMARY KEY,
@@ -41,7 +54,7 @@ export const initDB = async (): Promise<void> => {
 };
 
 
-const getDB = (): SQLite.SQLiteDatabase => {
+export const getDB = (): SQLite.SQLiteDatabase => {
   if (!db) {
     throw new Error('La base de datos no está inicializada. Llama a initDB() primero.');
   }
@@ -68,10 +81,10 @@ export const insertarProductos = async (productos: Producto[]): Promise<void> =>
 export const obtenerProductos = async (): Promise<Producto[]> => {
   try {
     const database = getDB();
-    const resultados = await database.getAllAsync<Producto>(
+    const productos = await database.getAllAsync<Producto>(
       `SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;`
     );
-    return resultados;
+    return productos;
   } catch (error) {
     console.error(error);
     return [];
@@ -100,48 +113,52 @@ export const insertarVenta = async (venta: SaleAndImages): Promise<void> => {
   }
 };
 
-export const obtenerVentas = async (): Promise<SaleAndImages[]> => {
+export const obtenerVentas = async (): Promise<SaleWithSavedImages[]> => {
   try {
-    const ventasBase = await db.getAllAsync<Sale>(`SELECT id, name, date, status, latitud, longitud FROM sale;`);
+    const db = getDB();
 
-    const ventasConImagenes: SaleAndImages[] = [];
+    const ventasBase = await db.getAllAsync<Sale>(
+      `SELECT id, name, date, status, latitud, longitud FROM sale;`
+    );
+
+    const ventasConImagenes: SaleWithSavedImages[] = [];
 
     for (const venta of ventasBase) {
-      const imagenes = await db.getAllAsync<{ url: string }>(
-        `SELECT url FROM sale_images WHERE sale_id = ?;`,
+      const imagenes = await db.getAllAsync<SaleImage>(
+        `SELECT id, url FROM sale_images WHERE sale_id = ?;`,
         [venta.id]
       );
 
       ventasConImagenes.push({
         ...venta,
-        images: imagenes.map((img) => ({ url: img.url })),
+        images: imagenes,
       });
     }
 
     return ventasConImagenes;
   } catch (error) {
-    console.error(error);
+    console.error("Error al obtener ventas:", error);
     return [];
   }
 };
 
-export const obtenerDetallesVenta = async (id: string): Promise<SaleAndImages | null> => {
+export const obtenerDetallesVenta = async (id: string): Promise<SaleWithSavedImages | null> => {
   try {
     const db = getDB();
 
-    const detalles = await db.getFirstAsync<SaleAndImages>(
+    const detalles = await db.getFirstAsync<SaleWithSavedImages>(
       `SELECT id, name, date, status, latitud, longitud FROM sale WHERE id = ?`,
       [id]
     );
 
     if (!detalles) return null;
 
-    const detalles_img = await db.getAllAsync<{ url: string }>(
+    const detalles_img = await db.getAllAsync<SaleImage>(
       `SELECT id, url FROM sale_images WHERE sale_id = ?`,
       [id]
     );
 
-    const ventaConImagenes: SaleAndImages = {
+    const ventaConImagenes: SaleWithSavedImages = {
       ...detalles,
       images: detalles_img,
     };
@@ -152,6 +169,7 @@ export const obtenerDetallesVenta = async (id: string): Promise<SaleAndImages | 
     return null;
   }
 };
+
 
 //Elimina la Venta realizada, asi como sus datos(Esto incluye imagenes)
 export const eliminarTodasLasVentas = async (): Promise<void> => {
@@ -232,6 +250,7 @@ const reemplazarTabla = async (nombreTabla: string, nuevoEsquema: string): Promi
 
     await database.runAsync(`DROP TABLE IF EXISTS ${nuevaTabla};`);
     // Paso 1: Crear la nueva tabla
+
     await database.runAsync(
       nuevoEsquema.replace(/CREATE TABLE \w+/i, `CREATE TABLE ${nuevaTabla}`)
     );

@@ -1,38 +1,66 @@
-import { Text, View, ActivityIndicator, Alert } from 'react-native';
-import { useAuth } from '../src/context/AuthContext';
-import { useProductos } from './Productos/useGetProducts';
+import { Text, View, Alert } from 'react-native';
+import { useGetProductos } from './Productos/useGetProductos';
 import { useEffect, useState } from 'react';
 import { Link } from 'expo-router';
 import { Boton } from '../Componentes/Boton/boton';
+import { getImage } from '../src/services/getImage';
+import {
+  contarImagenesNuevas,
+  sincronizarImagenesNuevasPorProducto,
+} from '../src/services/SincronizarImagenes';
 
 export default function Home() {
-  const { state, isLoading } = useAuth();
-  const { actualizarDatos, error } = useProductos();
+  const { actualizarDatosProductos, error } = useGetProductos();
   const [loadingActualizar, setLoadingActualizar] = useState(false);
 
   useEffect(() => {
     if (error) {
-      Alert.alert("Error", error);
+      Alert.alert('Error', error);
     }
   }, [error]);
+
+  const confirmarDescarga = (cantidad: number): Promise<boolean> => {
+    return new Promise((resolve) => {
+      Alert.alert(
+        'Sincronizar imágenes',
+        `Hay ${cantidad} imágenes nuevas. Descargar las imágenes puede consumir tus datos móviles. ¿Deseas continuar?`,
+        [
+          { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
+          { text: 'Descargar', onPress: () => resolve(true) },
+        ],
+        { cancelable: false }
+      );
+    });
+  };
 
   const manejarActualizacion = async () => {
     try {
       setLoadingActualizar(true);
-      await actualizarDatos();
+
+      //Llama a la funcion.
+      await actualizarDatosProductos();
+      //Obtiene el array de las url y las guarda
+      const listaImagenesProductos = await getImage();
+      if (!listaImagenesProductos || !Array.isArray(listaImagenesProductos)) return;
+
+      const { totalImagenesNuevas, imagenesNuevasPorProducto } =
+        await contarImagenesNuevas(listaImagenesProductos);
+
+      if (totalImagenesNuevas > 20) {
+        const confirmado = await confirmarDescarga(totalImagenesNuevas);
+        if (!confirmado) return;
+      } else {
+        console.log(`Descargando automáticamente ${totalImagenesNuevas} imágenes...`);
+      }
+
+      await sincronizarImagenesNuevasPorProducto(imagenesNuevasPorProducto);
+    } catch (error) {
+      Alert.alert('Error', 'Hubo un problema durante la actualización.');
     } finally {
       setLoadingActualizar(false);
     }
+    Alert.alert('Éxito', 'Datos actualizados.');
   };
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="small" />
-        <Text>Cargando...</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 }}>
@@ -46,7 +74,7 @@ export default function Home() {
         <Boton label="Lista de ventas" onPress={() => {}} />
       </Link>
 
-      <Link href="/Productos/listaproductos" asChild>
+      <Link href="/Productos/ListaProductos" asChild>
         <Boton label="Ver Productos" onPress={() => {}} />
       </Link>
 

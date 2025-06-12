@@ -25,4 +25,4 @@ export interface CreateSaleImage{
 
 export type SaleAndImages = Sale & { images: CreateSaleImage[] };
 
-export type SaleWithImages = Sale & { images: SaleImage[] };
+export type SaleWithSavedImages = Sale & { images: SaleImage[] };

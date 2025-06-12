@@ -1,16 +1,16 @@
-import { Text, View, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { Text, View, ScrollView, Alert, TouchableOpacity, Button } from 'react-native';
 import { styles } from './_listSale.styles';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import { useGetListVentas } from '../hooks/useGetListVentas';
 
 export default function listaVentas() {
-  const {listaVentas, loading, error}= useGetListVentas();
+  const { listaVentas, loading, error } = useGetListVentas();
 
   const router = useRouter();
 
   if (loading) return <Text>Cargando ventas...</Text>;
-  if (error) return <Text>Error: {error}</Text>
-  
+  if (error) return <Text>Error: {error}</Text>;
+
   return (
     <View style={styles.container}>
       <ScrollView style={{ padding: 10 }}>
@@ -19,13 +19,20 @@ export default function listaVentas() {
           <View key={venta.id} style={styles.card}>
             <TouchableOpacity
               onPress={() =>
-                router.push({ pathname: '/(tabs)/sales/detallesVenta/[id]', params: { id: venta.id } })
+                router.push({
+                  pathname: '/(tabs)/sales/detallesVenta/[id]',
+                  params: { id: venta.id },
+                })
               }>
               <Text style={styles.bold}>{venta.name}</Text>
             </TouchableOpacity>
           </View>
         ))}
       </ScrollView>
+
+      <Link href="/" asChild>
+        <Button title="Atrás" />
+      </Link>
     </View>
   );
 }

@@ -1,11 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { obtenerDetallesVenta } from 'app/Database/database';
-import { Sale } from '../../../../Types/Sale';
+import { Sale, SaleWithSavedImages } from '../../../../Types/Sale';
 
 export function useGetVenta() {
   const { id } = useLocalSearchParams();
-  const [venta, setVenta] = useState<Sale | null>(null);
+  const [venta, setVenta] = useState<SaleWithSavedImages | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

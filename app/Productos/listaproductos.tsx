@@ -1,27 +1,49 @@
-import { View, Text, FlatList, Image, TouchableOpacity, Button, TextInput, Alert } from "react-native";
-import { Link } from "expo-router";
-import { useState, useEffect } from "react";
-import fuzzysort from "fuzzysort";
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  Button,
+  TextInput,
+  Alert,
+} from 'react-native';
+import { Link } from 'expo-router';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import fuzzysort from 'fuzzysort';
 import { Ionicons } from '@expo/vector-icons';
-import { useProductos } from "./useGetProducts";
-import { Producto } from "../../Types/Producto";
-import { styles } from "../Productos/ListaProductos.styles";
+import { useGetProductos } from './useGetProductos';
+import { ProductoConImagen } from '../../Types/Producto';
+import { styles } from './ListaProductos.styles';
 
 export default function ListaProductos() {
   const [filtro, setFiltro] = useState('');
-  const { productos, loading, error } = useProductos();
+  const { productos, loading, error } = useGetProductos();
 
   useEffect(() => {
     if (error) {
-      Alert.alert("Error", error);
+      Alert.alert('Error', error);
     }
   }, [error]);
 
-  const productosFiltrados = filtro
-    ? fuzzysort.go(filtro, productos.filter(p => p.EXISTENCIAS > 0), { key: 'ARTICULO' }).map(result => result.obj)
-    : productos.filter(p => p.EXISTENCIAS > 0);
+  const productosFiltrados = useMemo(() => {
+    if (filtro) {
+      return fuzzysort
+        .go(
+          filtro,
+          productos.filter((p) => p.EXISTENCIAS > 0),
+          { key: 'ARTICULO' }
+        )
+        .map((result) => result.obj);
+    } else {
+      return productos.filter((p) => p.EXISTENCIAS > 0);
+    }
+  }, [filtro, productos]);
 
-  const renderItem = ({ item }: { item: Producto }) => <ProductoCard item={item} />;
+  const renderItem = useCallback(
+    ({ item }: { item: ProductoConImagen }) => <ProductoCard item={item} />,
+    []
+  );
 
   return (
     <View style={styles.contenedor}>
@@ -53,29 +75,30 @@ export default function ListaProductos() {
   );
 }
 
-function ProductoCard({ item }: { item: Producto }) {
+function ProductoCard({ item }: { item: ProductoConImagen }) {
   const [errorCarga, setErrorCarga] = useState(false);
 
   return (
-    <TouchableOpacity activeOpacity={0.9} style={styles.card}>
-      {errorCarga ? (
-        <View style={[styles.imagen, { justifyContent: 'center', alignItems: 'center' }]}>
-          <Ionicons name="image-outline" size={36} color="#94A3B8" />
+    <Link href={`/Productos/Detalles/${item.ARTICULO_ID}`} asChild>
+      <TouchableOpacity activeOpacity={0.9} style={styles.card}>
+        {errorCarga ? (
+          <View style={[styles.imagen, { justifyContent: 'center', alignItems: 'center' }]}>
+            <Ionicons name="image-outline" size={36} color="#94A3B8" />
+          </View>
+        ) : (
+          <Image
+            source={{ uri: 'file://' + item.IMAGEN_RUTA }}
+            style={styles.imagen}
+            resizeMode="cover"
+            onError={() => setErrorCarga(true)}
+          />
+        )}
+        <View style={styles.info}>
+          <Text style={styles.nombre}>{item.ARTICULO}</Text>
+          <Text style={styles.stock}>Stock: {item.EXISTENCIAS}</Text>
+          <Text style={styles.stock}>Precio: ${Number(item.PRECIO).toFixed(2)}</Text>
         </View>
-      ) : (
-        <Image
-          source={{ uri: 'https://via.placeholder.com/80' }}
-          style={styles.imagen}
-          resizeMode="cover"
-          onError={() => setErrorCarga(true)}
-        />
-      )}
-      <View style={styles.info}>
-        <Text style={styles.nombre}>{item.ARTICULO}</Text>
-        <Text style={styles.stock}>Stock: {item.EXISTENCIAS}</Text>
-        <Text style={styles.stock}>Precio: ${Number(item.PRECIO).toFixed(2)}</Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Link>
   );
 }
-

@@ -3,15 +3,15 @@ import { styles } from '../listaVentas/_listSale.styles'
 import { useGetVenta } from "../hooks/useGetVenta";
 
 export default function detallesDeVentas() {
-    const {venta , loading, error} = useGetVenta();    
+  const { venta, loading, error } = useGetVenta();
 
-    if (loading) {
-      return <Text>Cargando...</Text>;
-    }
+  if (loading) {
+    return <Text>Cargando...</Text>;
+  }
 
-    if (error) return <Text>Error:{error}</Text>
+  if (error) return <Text>Error:{error}</Text>;
 
-    if (!venta) return <Text>No se encontro ninguna venta...</Text>
+  if (!venta) return <Text>No se encontro ninguna venta...</Text>;
 
     return (
       <View>
@@ -28,13 +28,9 @@ export default function detallesDeVentas() {
           <Text>Latitud: {venta.latitud}</Text>
           <Text>Longitud: {venta.longitud}</Text>
           <Text style={styles.subtitulos}>Imágenes:</Text>
-          {venta.images?.map((img, index) => (
-            <Image
-              key={index}
-              source={{ uri: img.url }}
-              style={styles.imagenes}
-            />
-          ))}
+          {venta.images.map((img) => (
+          <Image key={img.id} source={{ uri: img.url }} style={styles.imagenes} />
+        ))}
         </ScrollView>
       </View>
   );
