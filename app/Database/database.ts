@@ -34,7 +34,9 @@ export const initDB = async (): Promise<void> => {
           id VARCHAR(50) PRIMARY KEY,
           name TEXT NOT NULL,
           date TEXT NOT NULL,
-          status INTEGER NOT NULL CHECK (status IN (0,1))
+          status INTEGER NOT NULL CHECK (status IN (0,1)),
+          latitud TEXT,
+          longitud TEXT
         );`
     );
     await db.execAsync(
