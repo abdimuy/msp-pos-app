@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getProductsLocal } from '../../src/services/products/getProductsLocal/getProductsLocal';
 import { insertProductsLocal } from '../../src/services/products/insertProductsLocal/insertProductsLocal';
 import { getFirstImageByProductLocal } from '../../src/services/products/getFirstImageByProductLocal/getFirstImageByProductLocal';
+import { deleteProductsLocal } from '../../src/services/products/deleteProductsLocal/deleteProductsLocal'; // <-- Asegúrate de importar esto
 import api from '../api';
 import { ProductoConImagen } from '../../type/Products';
 
@@ -14,10 +15,8 @@ export function useGetProducts() {
     try {
       setLoading(true);
 
-      // Obtiene productos desde la base local
       const productosLocales = await getProductsLocal();
 
-      // Para cada producto, obtiene la imagen principal y la agrega al objeto producto
       const productosConImagen = await Promise.all(
         productosLocales.map(async (p) => {
           const ruta = await getFirstImageByProductLocal(p.ARTICULO_ID);
@@ -37,16 +36,20 @@ export function useGetProducts() {
   const actualizarDatosProductos = async () => {
     try {
       setLoading(true);
-      // Obtener productos desde API
+
+      // 1. Obtener productos desde API
       const articulosDeApi = await api.get('/articulos');
       const nuevosProductos = Array.isArray(articulosDeApi.data.body)
         ? articulosDeApi.data.body
         : [];
 
-      // Guardar productos en la base local
+      // 2. Borrar productos locales para evitar duplicados
+      await deleteProductsLocal();
+
+      // 3. Insertar productos nuevos
       await insertProductsLocal(nuevosProductos);
 
-      // Luego recargar productos con imágenes desde la BD local
+      // 4. Recargar productos con imágenes
       await cargarProductosConImagenes();
 
       setError(null);

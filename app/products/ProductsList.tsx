@@ -94,7 +94,7 @@ function ProductoCard({ item }: { item: ProductoConImagen }) {
           />
         )}
         <View style={styles.info}>
-          <Text style={styles.nombre}>{item.ARTICULO}</Text>
+          <Text numberOfLines={2} style={styles.nombre}>{item.ARTICULO}</Text>
           <Text style={styles.stock}>Stock: {item.EXISTENCIAS}</Text>
           <Text style={styles.stock}>Precio: ${Number(item.PRECIO).toFixed(2)}</Text>
         </View>
