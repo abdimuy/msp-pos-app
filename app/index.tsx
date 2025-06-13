@@ -34,33 +34,37 @@ export default function Home() {
   };
 
   const manejarActualizacion = async () => {
-    try {
-      setLoadingActualizar(true);
+  try {
+    setLoadingActualizar(true);
 
-      //Llama a la funcion.
-      await actualizarDatosProductos();
-      //Obtiene el array de las url y las guarda
-      const listaImagenesProductos = await getImageApi();
-      if (!listaImagenesProductos || !Array.isArray(listaImagenesProductos)) return;
+    // Llama a la función que actualiza productos
+    await actualizarDatosProductos();
 
-      const { totalImagenesNuevas, imagenesNuevasPorProducto } =
-        await contarImagenesNuevas(listaImagenesProductos);
+    // Obtiene la lista de imágenes desde la API
+    const listaImagenesProductos = await getImageApi();
+    if (!listaImagenesProductos || !Array.isArray(listaImagenesProductos)) return;
 
-      if (totalImagenesNuevas > 20) {
-        const confirmado = await confirmarDescarga(totalImagenesNuevas);
-        if (!confirmado) return;
-      } else {
-        console.log(`Descargando automáticamente ${totalImagenesNuevas} imágenes...`);
-      }
+    const { totalImagenesNuevas, imagenesNuevasPorProducto } =
+      await contarImagenesNuevas(listaImagenesProductos);
 
-      await sincronizarImagenesNuevasPorProducto(imagenesNuevasPorProducto);
-    } catch (error) {
-      Alert.alert('Error', 'Hubo un problema durante la actualización.');
-    } finally {
-      setLoadingActualizar(false);
+    // Confirmar descarga si hay muchas imágenes
+    if (totalImagenesNuevas > 20) {
+      const confirmado = await confirmarDescarga(totalImagenesNuevas);
+      if (!confirmado) return;
+    } else {
+      console.log(`Descargando automáticamente ${totalImagenesNuevas} imágenes...`);
     }
-    Alert.alert('Éxito', 'Datos actualizados.');
-  };
+
+    await sincronizarImagenesNuevasPorProducto(imagenesNuevasPorProducto);
+
+    Alert.alert('Éxito', 'Datos actualizados correctamente.');
+  } catch (error) {
+    Alert.alert('Error', 'Hubo un problema durante la actualización.');
+  } finally {
+    setLoadingActualizar(false);
+  }
+};
+
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 }}>
