@@ -22,6 +22,7 @@ import { SaveSaleCompleteLocal } from '../../../../src/services/sale/SaveSaleCom
 import uuid from 'react-native-uuid';
 import MapView, { Marker } from 'react-native-maps';
 import { useLocation } from '../hooks/useGetLocation';
+import { formatISO } from 'date-fns'
 
 export default function RegistrarCliente() {
   const [nombre, setNombre] = useState('');
@@ -81,7 +82,7 @@ const { location, latitude, longitude, address, errorMsg } = useLocation();
     const nuevaVenta: SaleAndImages = {
       id: uuid.v4(),
       name: nombre,
-      date: new Date().toISOString(),
+      date: formatISO(new Date()),
       status: 0,
       latitud: latitude,
       longitud: longitude,
