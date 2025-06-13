@@ -1,0 +1,96 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  header: {
+    width: '100%',
+    paddingVertical: 12,
+    marginBottom: 20,
+    borderRadius: 10,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#003366',
+    textAlign: 'center',
+  },
+  imageWrapper: {
+    marginVertical: 10,
+    borderRadius: 15,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+  },
+  image: {
+    width: 240,
+    height: 240,
+    borderRadius: 12,
+  },
+  infoCard: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 15,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    marginVertical: 16,
+    width: '100%',
+    maxWidth: 360,
+  },
+  name: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  price: {
+    fontSize: 22,
+    color: '#2e7d32',
+    fontWeight: 'bold',
+  },
+  text: {
+    fontSize: 18,
+  },
+  error: {
+    color: 'red',
+    fontSize: 16,
+    marginVertical: 8,
+  },
+  descripcionCard: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 8,
+    width: '100%',
+    maxWidth: 360,
+    marginBottom: 20,
+  },
+  descripcionTitulo: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  descripcionTexto: {
+    fontSize: 16,
+    lineHeight: 22,
+    color: '#333',
+  },
+  priceMeses: {
+    fontSize: 18,
+    color: '#2e7d32',
+    marginTop: 4,
+  },
+});
