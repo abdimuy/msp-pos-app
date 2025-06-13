@@ -8,7 +8,7 @@ export const insertProductsLocal = async (productos: Producto[], txn?: Tx): Prom
   for (const p of productos) {
     await database.runAsync(
       `INSERT INTO productos (ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO) VALUES (?, ?, ?, ?);`,
-      [p.ARTICULO_ID, p.ARTICULO, p.EXISTENCIAS, p.PRECIO]
+      [p.ARTICULO_ID, p.ARTICULO, p.EXISTENCIAS, p.PRECIOS]
     );
   }
 };

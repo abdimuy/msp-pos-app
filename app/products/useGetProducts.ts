@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getProductsLocal } from '../../src/services/products/getProductsLocal/getProductsLocal';
 import { insertProductsLocal } from '../../src/services/products/insertProductsLocal/insertProductsLocal';
 import { getFirstImageByProductLocal } from '../../src/services/products/getFirstImageByProductLocal/getFirstImageByProductLocal';
-import { deleteProductsLocal } from '../../src/services/products/deleteProductsLocal/deleteProductsLocal'; // <-- Asegúrate de importar esto
+import { deleteProductsLocal } from '../../src/services/products/deleteProductsLocal/deleteProductsLocal';
 import api from '../api';
 import { ProductoConImagen } from '../../type/Products';
 
