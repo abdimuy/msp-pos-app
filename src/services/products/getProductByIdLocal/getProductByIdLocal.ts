@@ -1,5 +1,5 @@
 import { Producto } from '../../../../type/Products';
-import { getDB, Tx } from '../../../../app/Database/database';
+import { getDB, Tx } from '../../../../app/database/database';
 import * as SQLite from 'expo-sqlite';
 
 export async function getProductByIdLocal(id: number, txn?: Tx): Promise<Producto | null> {

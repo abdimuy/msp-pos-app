@@ -1,5 +1,5 @@
 import { Sale, SaleAndImages } from '../../../../type/Sale';
-import { Tx } from '../../../../app/Database/database';
+import { Tx } from '../../../../app/database/database';
 import { insertSaleLocal } from '../insertSaleLocal/insertSaleLocal';
 import { insertSaleImagesLocal } from '../insertSaleImagesLocal/insertSaleImagesLocal';
 

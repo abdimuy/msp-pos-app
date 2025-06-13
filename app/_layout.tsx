@@ -3,7 +3,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AuthProvider } from '../src/context/AuthContext';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
-import { initDB } from '../app/Database/database';
+import { initDB } from './database/database';
 
 export default function RootLayout() {
   const [dbInitialized, setDbInitialized] = useState(false);

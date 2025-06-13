@@ -1,4 +1,4 @@
-import { getDB, Tx } from '../../../../app/Database/database';
+import { getDB, Tx } from '../../../../app/database/database';
 import * as SQLite from 'expo-sqlite';
 
 export const deleteAllSalesLocal = async (txn?: Tx): Promise<void> => {

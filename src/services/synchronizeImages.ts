@@ -1,6 +1,6 @@
 import { Imagenes } from './getImageApi';
 import * as FileSystem from 'expo-file-system';
-import { getDB } from '../../app/Database/database';
+import { getDB } from '../../app/database/database';
 import { insertImagePathsIfNotExistLocal } from './products/insertImagePathsIfNotExistLocal/insertImagePathsIfNotExistLocal';
 import { Alert } from 'react-native';
 
