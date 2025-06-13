@@ -6,6 +6,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: 'sistemaCobroAppMsp',
   android: {
     package: 'com.abdidev.sistemacobro',
+    config: {
+      googleMaps: {
+        apiKey: process.env.GOOGLE_MAPS_API_KEY,
+      },
+    },
   },
   extra: {
     firebase: {
@@ -18,13 +23,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     eas: {
       projectId: '7ae6d062-cdbb-4020-9e27-56019ad2c580',
-    },
-  },
-    android: {
-    config: {
-      googleMaps: {
-        apiKey: process.env.GOOGLE_MAPS_API_KEY,
-      },
     },
   },
   ios: {
