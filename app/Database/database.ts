@@ -3,16 +3,14 @@ import { storeInitialSchemasLocal } from '../../src/services/sale/storeInitialSc
 
 let db: SQLite.SQLiteDatabase;
 
-export type Tx = Parameters<typeof db.withExclusiveTransactionAsync>[0] extends (tx: infer T) => any
-  ? T
-  : never;
+ export type Tx = Parameters<typeof db.withExclusiveTransactionAsync>[0] extends (tx: infer T) => any
+   ? T
+   : never;
 
 export const initDB = async (): Promise<void> => {
   try {
     db = await SQLite.openDatabaseAsync('productos.db');
-
     await db.execAsync(`
-
       PRAGMA journal_mode = WAL;
       CREATE TABLE IF NOT EXISTS productos (
         ARTICULO_ID INTEGER PRIMARY KEY NOT NULL,
@@ -32,7 +30,7 @@ export const initDB = async (): Promise<void> => {
     `);
 
     console.log('Base de datos inicializada correctamente.');
-
+    
     await db.execAsync(
       `CREATE TABLE IF NOT EXISTS sale (
           id VARCHAR(50) PRIMARY KEY,

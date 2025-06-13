@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { useRef, useState, useEffect } from 'react';
+import { CameraView, CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import {
   View,
@@ -17,93 +17,94 @@ import ImageViewing from 'react-native-image-viewing';
 import { styles } from './_newSales.styles';
 import { Boton } from '../../../../components/boton/Boton';
 import { Link, useRouter } from 'expo-router';
-import { Sale } from 'type/Sale';
+import { SaleAndImages } from 'type/Sale';
 import { SaveSaleCompleteLocal } from '../../../../src/services/sale/SaveSaleCompleteLocal/SaveSaleCompleteLocal';
 import uuid from 'react-native-uuid';
+import MapView, { Marker } from 'react-native-maps';
+import { useLocation } from '../hooks/useGetLocation';
 
 export default function RegistrarCliente() {
   const [nombre, setNombre] = useState('');
   const [nombreTocado, setNombreTocado] = useState(false);
-  const [fotosUris, setFotosUris] = useState<string[]>([]);
-  const [mostrarCamara, setMostrarCamara] = useState(false);
-  const [mostrarSelectorFuente, setMostrarSelectorFuente] = useState(false);
+  const [photosUris, setPhotosUris] = useState<string[]>([]);
+  const [showCamera, setShowCamera] = useState(false);
+  const [showSourceSelector, setShowSourceSelector] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
   const cameraRef = useRef<CameraView | null>(null);
-  const [permission, requestPermission] = useCameraPermissions();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+const { location, latitude, longitude, address, errorMsg } = useLocation();
 
   const nombreInvalido = nombreTocado && nombre.trim() === '';
 
-  const tomarFoto = async () => {
+  const takePhoto = async () => {
     if (cameraRef.current) {
       const foto = await cameraRef.current.takePictureAsync();
-      setFotosUris((prev) => [...prev, foto.uri]);
-      setMostrarCamara(false);
+      setPhotosUris((prev) => [...prev, foto.uri]);
+      setShowCamera(false);
     }
   };
-  const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const abrirSelectorFuente = () => {
-    setMostrarSelectorFuente(true);
+  const openSourceSelector = () => {
+    setShowSourceSelector(true);
   };
 
-  const abrirGaleria = async () => {
+  const openGallery = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
     });
 
     if (!result.canceled) {
-      setFotosUris((prev) => [...prev, result.assets[0].uri]);
+      setPhotosUris((prev) => [...prev, result.assets[0].uri]);
     }
   };
 
-  const eliminarFoto = (index: number) => {
-    setFotosUris((prev) => prev.filter((_, i) => i !== index));
+  const deletePhoto = (index: number) => {
+    setPhotosUris((prev) => prev.filter((_, i) => i !== index));
   };
 
   const toggleCameraFacing = () => {
     setFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
 
-  if (!permission) return <View />;
-  if (!permission.granted) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.message}>Necesitamos permisos para usar la cámara</Text>
-        <Button onPress={requestPermission} title="Conceder permiso" />
-      </View>
-    );
-  }
-
   const handleSiguiente = async () => {
     setIsLoading(true);
-    const nuevaVenta: Sale = {
+
+    if (!latitude || !longitude) {
+      alert('No se puede tener la ubicacion');
+      setIsLoading(false);
+      return;
+    }
+
+    const nuevaVenta: SaleAndImages = {
       id: uuid.v4(),
       name: nombre,
       date: new Date().toISOString(),
       status: 0,
-      images: fotosUris.map((url) => ({ url })),
+      latitud: latitude,
+      longitud: longitude,
+      images: photosUris.map((url) => ({ url })),
     };
     await SaveSaleCompleteLocal(nuevaVenta);
     setNombre('');
-    setFotosUris([]);
+    setPhotosUris([]);
     setIsLoading(false);
-    router.replace('/(tabs)/sales/listaVentas/listSale');
+    router.replace('/(tabs)/sales/saleList/ListSale');
   };
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      {mostrarCamara ? (
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      {showCamera ? (
         <CameraView ref={cameraRef} style={styles.camera} facing={facing} enableTorch={false}>
           <View style={styles.cameraButtons}>
             <TouchableOpacity style={styles.camBtn} onPress={toggleCameraFacing}>
               <Text style={styles.camBtnText}>Cambiar Camara</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.camBtn} onPress={tomarFoto}>
+            <TouchableOpacity style={styles.camBtn} onPress={takePhoto}>
               <Text style={styles.camBtnText}>Tomar Foto</Text>
             </TouchableOpacity>
           </View>
@@ -128,35 +129,64 @@ export default function RegistrarCliente() {
           {nombreInvalido && <Text style={styles.errorText}>El nombre es obligatorio</Text>}
 
           {/* BOTÓN AGREGAR FOTOS */}
-          <TouchableOpacity style={styles.addButton} onPress={abrirSelectorFuente}>
+          <TouchableOpacity style={styles.addButton} onPress={openSourceSelector}>
             <Entypo name="camera" size={20} color="#007BFF" />
             <Text style={styles.addButtonText}>Agregar fotos</Text>
           </TouchableOpacity>
 
-          {/* GALERÍA MINIATURAS */}
-          {fotosUris.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-              {fotosUris.map((uri, index) => (
-                <TouchableOpacity key={index} onPress={() => setImagenSeleccionada(uri)}>
-                  <View style={styles.thumbWrapper}>
-                    <Image source={{ uri }} style={styles.thumbnail} />
-                    <TouchableOpacity style={styles.deleteIcon} onPress={() => eliminarFoto(index)}>
-                      <AntDesign name="closecircle" size={16} color="red" />
-                    </TouchableOpacity>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
+          <View style={{ flexGrow: 1, maxHeight: 500 }}>
+            {/* GALERÍA MINIATURAS */}
+            {photosUris.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={true}
+                style={styles.scrollView}>
+                {photosUris.map((uri, index) => (
+                  <TouchableOpacity key={index} onPress={() => setSelectedImage(uri)}>
+                    <View style={styles.thumbWrapper}>
+                      <Image source={{ uri }} style={styles.thumbnail} />
+                      <TouchableOpacity
+                        style={styles.deleteIcon}
+                        onPress={() => deletePhoto(index)}>
+                        <AntDesign name="closecircle" size={16} color="red" />
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+
+            <View>
+              <Text style={{ paddingBottom: 10 }}>Agregar Ubicación</Text>
+              <MapView
+                style={styles.map}
+                initialRegion={{
+                  latitude: location ? location.coords.latitude : 0,
+                  longitude: location ? location.coords.longitude : 0,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.04,
+                }}>
+                {location && (
+                  <Marker
+                    coordinate={{
+                      latitude: location.coords.latitude,
+                      longitude: location.coords.longitude,
+                    }}
+                    title="Tu ubicación"
+                  />
+                )}
+              </MapView>
+              <Text>{address}</Text>
+            </View>
+          </View>
 
           <ImageViewing
-            images={[{ uri: imagenSeleccionada || '' }]}
+            images={[{ uri: selectedImage || '' }]}
             imageIndex={0}
-            visible={!!imagenSeleccionada}
-            onRequestClose={() => setImagenSeleccionada(null)}
+            visible={!!selectedImage}
+            onRequestClose={() => setSelectedImage(null)}
             swipeToCloseEnabled
           />
-
           {/* BOTÓN SIGUIENTE */}
           <View style={styles.contenedor}>
             <Boton
@@ -174,28 +204,28 @@ export default function RegistrarCliente() {
           </View>
         </ScrollView>
       )}
-      {mostrarSelectorFuente && (
+      {showSourceSelector && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <TouchableOpacity
               style={styles.modalOption}
               onPress={() => {
-                setMostrarSelectorFuente(false);
-                setMostrarCamara(true);
+                setShowSourceSelector(false);
+                setShowCamera(true);
               }}>
               <Text style={styles.modalOptionText}>Tomar Foto</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.modalOption}
               onPress={() => {
-                setMostrarSelectorFuente(false);
-                abrirGaleria();
+                setShowSourceSelector(false);
+                openGallery();
               }}>
               <Text style={styles.modalOptionText}>Seleccionar de Galería</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.modalCancelar}
-              onPress={() => setMostrarSelectorFuente(false)}>
+              onPress={() => setShowSourceSelector(false)}>
               <Text style={styles.modalCancelarText}>Cancelar</Text>
             </TouchableOpacity>
           </View>

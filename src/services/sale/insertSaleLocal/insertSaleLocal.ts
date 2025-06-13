@@ -5,10 +5,8 @@ import * as SQLite from 'expo-sqlite';
 export const insertSaleLocal = async (venta: Sale, txn?: Tx): Promise<void> => {
   const db = getDB();
   const database: Tx | SQLite.SQLiteDatabase = txn ?? db;
-  await database.runAsync(`INSERT INTO sale (id, name, date, status) VALUES (?, ?, ?, ?);`, [
-    venta.id,
-    venta.name,
-    venta.date,
-    venta.status,
-  ]);
+  await database.runAsync(
+    `INSERT INTO sale (id, name, date, status, latitud, longitud) VALUES (?, ?, ?, ?, ?, ?);`,
+    [venta.id, venta.name, venta.date, venta.status, venta.latitud, venta.longitud]
+  );
 };

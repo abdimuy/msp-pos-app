@@ -1,8 +1,8 @@
-import { Sale } from '../../../../type/Sale';
+import { Sale, SaleBase } from '../../../../type/Sale';
 import { getDB, Tx } from '../../../../app/database/database';
 import * as SQLite from 'expo-sqlite';
 
-export const getSalesLocal = async (txn?: Tx): Promise<Sale[]> => {
+export const getSalesLocal = async (txn?: Tx): Promise<SaleBase[]> => {
   const db = getDB();
   const database: Tx | SQLite.SQLiteDatabase = txn ?? db;
   const saleList = await database.getAllAsync<Sale>(`SELECT id, name, date, status FROM sale;`);
@@ -12,7 +12,7 @@ export const getSalesLocal = async (txn?: Tx): Promise<Sale[]> => {
       `SELECT url FROM sale_images WHERE sale_id = ?;`,
       [venta.id]
     );
-    venta.images = images.map((img) => ({ url: img.url }));
+    //venta.images = images.map((img) => ({ url: img.url }));
   }
   return saleList;
 };
