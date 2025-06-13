@@ -185,6 +185,7 @@ export const styles = StyleSheet.create({
     width: '100%',
     height: 200, // o el alto que desees
     borderRadius: 15,
-    marginBottom: 20,
+    overflow: 'hidden'
+
   }
 });

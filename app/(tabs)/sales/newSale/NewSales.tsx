@@ -23,6 +23,7 @@ import uuid from 'react-native-uuid';
 import MapView, { Marker } from 'react-native-maps';
 import { useLocation } from '../hooks/useGetLocation';
 import { formatISO } from 'date-fns'
+import { map } from 'eslint.config';
 
 export default function RegistrarCliente() {
   const [nombre, setNombre] = useState('');
@@ -159,25 +160,31 @@ const { location, latitude, longitude, address, errorMsg } = useLocation();
 
             <View>
               <Text style={{ paddingBottom: 10 }}>Agregar Ubicación</Text>
-              <MapView
-                style={styles.map}
-                initialRegion={{
-                  latitude: location ? location.coords.latitude : 0,
-                  longitude: location ? location.coords.longitude : 0,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.04,
-                }}>
-                {location && (
-                  <Marker
-                    coordinate={{
+              <View style={styles.map }>
+                {location  && location.coords ? (
+                  <MapView
+                    style={{flex: 1}}
+                    initialRegion={{
                       latitude: location.coords.latitude,
                       longitude: location.coords.longitude,
-                    }}
-                    title="Tu ubicación"
-                  />
+                      latitudeDelta: 0.005,
+                      longitudeDelta: 0.01,
+                    }}>
+                    {location && (
+                      <Marker
+                        coordinate={{
+                          latitude: location.coords.latitude,
+                          longitude: location.coords.longitude,
+                        }}
+                        title="Tu ubicación"
+                      />
+                    )}
+                  </MapView>
+                ) : (
+                  <Text>Obteniendo ubicación...</Text>
                 )}
-              </MapView>
-              <Text>{address}</Text>
+              </View>
+              <Text style={{marginTop: 17}}>{address}</Text>
             </View>
           </View>
 
