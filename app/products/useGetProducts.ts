@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { getProductsLocal } from '../../src/services/products/getProductsLocal/getProductsLocal';
 import { insertProductsLocal } from '../../src/services/products/insertProductsLocal/insertProductsLocal';
 import { getFirstImageByProductLocal } from '../../src/services/products/getFirstImageByProductLocal/getFirstImageByProductLocal';
-import { deleteProductsLocal } from '../../src/services/products/deleteProductsLocal/deleteProductsLocal'; // <-- Asegúrate de importar esto
+import { deleteProductsLocal } from '../../src/services/products/deleteProductsLocal/deleteProductsLocal';
 import api from '../api';
-import { ProductoConImagen } from '../../type/Products';
+import { ProductoConImagenParseado } from '../../type/Products';
 
 export function useGetProducts() {
-  const [productos, setProductos] = useState<ProductoConImagen[]>([]);
+  const [productos, setProductos] = useState<ProductoConImagenParseado[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +20,15 @@ export function useGetProducts() {
       const productosConImagen = await Promise.all(
         productosLocales.map(async (p) => {
           const ruta = await getFirstImageByProductLocal(p.ARTICULO_ID);
-          return { ...p, IMAGEN_RUTA: ruta };
+
+          let parsedPrices: Record<string, number> = {};
+          try {
+            parsedPrices = JSON.parse(p.PRECIOS);
+          } catch {
+            parsedPrices = {};
+          }
+
+          return { ...p, IMAGEN_RUTA: ruta, PRECIOS: parsedPrices };
         })
       );
 

@@ -26,7 +26,7 @@ export const styles = StyleSheet.create({
     paddingTop: 16,
   },
   card: {
-    height: 96,
+    height: 120,
     flexDirection: 'row',
     backgroundColor: '#F8FAFC',
     borderColor: '#E2E8F0',
@@ -55,6 +55,10 @@ export const styles = StyleSheet.create({
   stock: {
     fontSize: 14,
     fontWeight: '400',
-    color: '#0056B3',
+    color: '#003366',
+  },
+  price: {
+    color: '#000',
+    fontWeight: 'bold',
   },
 });

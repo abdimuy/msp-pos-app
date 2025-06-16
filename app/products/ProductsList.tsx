@@ -13,7 +13,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import fuzzysort from 'fuzzysort';
 import { Ionicons } from '@expo/vector-icons';
 import { useGetProducts } from './useGetProducts';
-import { ProductoConImagen } from '../../type/Products';
+import { ProductoConImagenParseado } from '../../type/Products';
 import { styles } from './ProductsList.styles';
 
 export default function ListaProductos() {
@@ -41,7 +41,7 @@ export default function ListaProductos() {
   }, [filtro, productos]);
 
   const renderItem = useCallback(
-    ({ item }: { item: ProductoConImagen }) => <ProductoCard item={item} />,
+    ({ item }: { item: ProductoConImagenParseado }) => <ProductoCard item={item} />,
     []
   );
 
@@ -59,7 +59,7 @@ export default function ListaProductos() {
       {loading ? (
         <Text>Cargando productos...</Text>
       ) : (
-        <FlatList
+        <FlatList<ProductoConImagenParseado>
           data={productosFiltrados}
           keyExtractor={(item) => item.ARTICULO_ID.toString()}
           renderItem={renderItem}
@@ -75,7 +75,7 @@ export default function ListaProductos() {
   );
 }
 
-function ProductoCard({ item }: { item: ProductoConImagen }) {
+function ProductoCard({ item }: { item: ProductoConImagenParseado }) {
   const [errorCarga, setErrorCarga] = useState(false);
 
   return (
@@ -94,9 +94,17 @@ function ProductoCard({ item }: { item: ProductoConImagen }) {
           />
         )}
         <View style={styles.info}>
-          <Text numberOfLines={2} style={styles.nombre}>{item.ARTICULO}</Text>
-          <Text style={styles.stock}>Stock: {item.EXISTENCIAS}</Text>
-          <Text style={styles.stock}>Precio: ${Number(item.PRECIO).toFixed(2)}</Text>
+          <Text numberOfLines={2} style={styles.nombre}>
+            {item.ARTICULO}
+          </Text>
+          <Text style={styles.stock}>
+            Stock: <Text style={styles.price}>{item.EXISTENCIAS}</Text>
+          </Text>
+          {Object.entries(item.PRECIOS).map(([tipo, valor]) => (
+            <Text key={tipo} style={styles.stock}>
+              {tipo}:<Text style={styles.price}>${Number(valor).toFixed(2)}</Text>
+            </Text>
+          ))}
         </View>
       </TouchableOpacity>
     </Link>

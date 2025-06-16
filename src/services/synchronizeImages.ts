@@ -103,7 +103,7 @@ export const sincronizarImagenesNuevasPorProducto = async (
       //Ejecuta en paralelo de todas las descargas de imágenes de ese producto usando Promise.all
       const imagenesGuardadas = await Promise.all(
         imagenesNuevas.map(async (img) => {
-          const urlCorregida = img.url.replace('localhost', '192.168.0.219');
+          const urlCorregida = img.url.replace('localhost', '192.168.0.214');
           const imagenGuardada = await guardarImagenSiNoExiste(
             urlCorregida,
             `${articuloId}_${img.id}`

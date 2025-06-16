@@ -14,8 +14,8 @@ export interface SaleImage {
   url: string;
 }
 
-export interface CreateSaleImage{
-  url: string
+export interface CreateSaleImage {
+  url: string;
 }
 
 export type SaleAndImages = Sale & { images: CreateSaleImage[] };
