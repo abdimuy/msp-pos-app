@@ -34,37 +34,36 @@ export default function Home() {
   };
 
   const manejarActualizacion = async () => {
-  try {
-    setLoadingActualizar(true);
+    try {
+      setLoadingActualizar(true);
 
-    // Llama a la función que actualiza productos
-    await actualizarDatosProductos();
+      // Llama a la función que actualiza productos
+      await actualizarDatosProductos();
 
-    // Obtiene la lista de imágenes desde la API
-    const listaImagenesProductos = await getImageApi();
-    if (!listaImagenesProductos || !Array.isArray(listaImagenesProductos)) return;
+      // Obtiene la lista de imágenes desde la API
+      const listaImagenesProductos = await getImageApi();
+      if (!listaImagenesProductos || !Array.isArray(listaImagenesProductos)) return;
 
-    const { totalImagenesNuevas, imagenesNuevasPorProducto } =
-      await contarImagenesNuevas(listaImagenesProductos);
+      const { totalImagenesNuevas, imagenesNuevasPorProducto } =
+        await contarImagenesNuevas(listaImagenesProductos);
 
-    // Confirmar descarga si hay muchas imágenes
-    if (totalImagenesNuevas > 20) {
-      const confirmado = await confirmarDescarga(totalImagenesNuevas);
-      if (!confirmado) return;
-    } else {
-      console.log(`Descargando automáticamente ${totalImagenesNuevas} imágenes...`);
+      // Confirmar descarga si hay muchas imágenes
+      if (totalImagenesNuevas > 20) {
+        const confirmado = await confirmarDescarga(totalImagenesNuevas);
+        if (!confirmado) return;
+      } else {
+        console.log(`Descargando automáticamente ${totalImagenesNuevas} imágenes...`);
+      }
+
+      await sincronizarImagenesNuevasPorProducto(imagenesNuevasPorProducto);
+
+      Alert.alert('Éxito', 'Datos actualizados correctamente.');
+    } catch (error) {
+      Alert.alert('Error', 'Hubo un problema durante la actualización.');
+    } finally {
+      setLoadingActualizar(false);
     }
-
-    await sincronizarImagenesNuevasPorProducto(imagenesNuevasPorProducto);
-
-    Alert.alert('Éxito', 'Datos actualizados correctamente.');
-  } catch (error) {
-    Alert.alert('Error', 'Hubo un problema durante la actualización.');
-  } finally {
-    setLoadingActualizar(false);
-  }
-};
-
+  };
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 }}>

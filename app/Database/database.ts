@@ -18,7 +18,7 @@ export const initDB = async (): Promise<void> => {
         ARTICULO_ID INTEGER PRIMARY KEY NOT NULL,
         ARTICULO TEXT NOT NULL, 
         EXISTENCIAS INTEGER NOT NULL,
-        PRECIO REAL NOT NULL
+        PRECIOS TEXT NOT NULL
       );
     `);
 

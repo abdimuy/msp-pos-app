@@ -5,16 +5,12 @@ export type ProductoBase = {
   PRECIOS: string;
 };
 
-export type ProductoConPreciosSeparados = ProductoBase & {
-  preciosSeparados: {
-    'Precio de lista': number;
-    'Precio 4 Meses': number;
-    'Precio 1 Meses': number;
-  };
+export type ProductoConImagen = ProductoBase & {
+  IMAGEN_RUTA: string | null; 
 };
 
-export type ProductoConImagen = ProductoBase & {
-  IMAGEN_RUTA: string | null;
+export type ProductoConImagenParseado = Omit<ProductoConImagen, 'PRECIOS'> & {
+  PRECIOS: Record<string, number>;
 };
 
 export type Producto = ProductoBase;

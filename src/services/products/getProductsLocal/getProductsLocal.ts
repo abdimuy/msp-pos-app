@@ -6,7 +6,7 @@ export const getProductsLocal = async (txn?: Tx): Promise<Producto[]> => {
   const db = getDB();
   const database: Tx | SQLite.SQLiteDatabase = txn ?? db;
   const products = await database.getAllAsync<Producto>(
-    'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos;'
+    'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIOS FROM productos;'
   );
 
   return products;

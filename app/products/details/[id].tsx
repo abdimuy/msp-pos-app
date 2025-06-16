@@ -5,6 +5,7 @@ import { useGetImagesById } from './useGetImagesById';
 import { useLocalSearchParams, Link } from 'expo-router';
 import { useGetProductById } from './useGetProductById ';
 import { styles } from '../details/DetailsProducts.styles';
+import { convertPrices } from '~/services/convertPrices';
 
 export default function DetalleProducto() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,6 +22,11 @@ export default function DetalleProducto() {
       url: uri.startsWith('file://') ? uri : 'file://' + uri,
     }));
   }, [imagenes]);
+
+  const parsedPrices = useMemo(() => {
+    if (!producto?.PRECIOS) return {};
+    return convertPrices(producto.PRECIOS);
+  }, [producto?.PRECIOS]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -49,16 +55,13 @@ export default function DetalleProducto() {
       {producto && (
         <View style={styles.infoCard}>
           <Text style={styles.name}>PRECIOS</Text>
-          <Text style={styles.price}>${producto.PRECIO.toFixed(2)}</Text>
-          <Text style={styles.text}>
-            precio de lista <Text style={styles.price}>${producto.PRECIO.toFixed(2)}</Text>
-          </Text>
-          <Text style={styles.text}>
-            a 1 mes <Text style={styles.price}>${producto.PRECIO.toFixed(2)}</Text>
-          </Text>
-          <Text style={styles.text}>
-            a 4 meses <Text style={styles.price}>${producto.PRECIO.toFixed(2)}</Text>
-          </Text>
+          {Object.keys(parsedPrices).length > 0 ? (
+            Object.entries(parsedPrices).map(([tipo, valor]) => (
+              <Text key={tipo} style={styles.price}>
+                {tipo}: ${valor.toFixed(2)}
+              </Text>
+            ))) : (<Text style={styles.text}>No hay precios disponibles.</Text>)
+          }
         </View>
       )}
 

@@ -6,7 +6,7 @@ export async function getProductByIdLocal(id: number, txn?: Tx): Promise<Product
   const db = getDB();
   const database: Tx | SQLite.SQLiteDatabase = txn ?? db;
   const productData = await database.getAllAsync<Producto>(
-    'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIO FROM productos WHERE ARTICULO_ID = ?',
+    'SELECT ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIOS FROM productos WHERE ARTICULO_ID = ?',
     [id]
   );
   return productData.length > 0 ? productData[0] : null;
