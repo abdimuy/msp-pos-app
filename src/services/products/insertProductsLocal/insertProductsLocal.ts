@@ -7,11 +7,11 @@ export const insertProductsLocal = async (productos: Producto[], txn?: Tx): Prom
   const db = getDB();
   const database: Tx | SQLite.SQLiteDatabase = txn ?? db;
   for (const p of productos) {
-    const praiseObj = convertPrices(p.PRECIOS);
-    const praiseJSON = JSON.stringify(praiseObj);
+    const pricesObj = convertPrices(p.PRECIOS);
+    const pricesJSON = JSON.stringify(pricesObj);
     await database.runAsync(
       `INSERT INTO productos (ARTICULO_ID, ARTICULO, EXISTENCIAS, PRECIOS) VALUES (?, ?, ?, ?);`,
-      [p.ARTICULO_ID, p.ARTICULO, p.EXISTENCIAS, praiseJSON]
+      [p.ARTICULO_ID, p.ARTICULO, p.EXISTENCIAS, pricesJSON]
     );
   }
 };

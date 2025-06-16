@@ -1,7 +1,23 @@
-export interface Sale {
+export interface SaleBase {
   id: string;
   name: string;
-  date: string; 
+  date: string;
   status: number; // 0 o 1
-  images: { id?: number; url: string }[];
+  latitud: string;
+  longitud: string;
 }
+
+export type Sale = SaleBase;
+
+export interface SaleImage {
+  id: number;
+  url: string;
+}
+
+export interface CreateSaleImage {
+  url: string;
+}
+
+export type SaleAndImages = Sale & { images: CreateSaleImage[] };
+
+export type SaleWithSavedImages = Sale & { images: SaleImage[] };

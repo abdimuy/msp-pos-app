@@ -7,7 +7,10 @@ export function convertPrices(pricesString: string): Record<string, number> {
   pricesString = pricesString.trim().replace(/^\{/, '').replace(/\}$/, '');
 
   pricesString.split(',').forEach((parte) => {
-    const [key, priceValue] = parte.split(':').map(s => s.trim());
+    const [keyRaw, priceValue] = parte.split(':').map((s) => s.trim());
+
+    // Quitar comillas simples o dobles al inicio y fin de la clave
+    const key = keyRaw.replace(/^['"]|['"]$/g, '');
 
     if (key && priceValue) {
       // Reemplazar coma por punto y quitar símbolos no numéricos excepto punto

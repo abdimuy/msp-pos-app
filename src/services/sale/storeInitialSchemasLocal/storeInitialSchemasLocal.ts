@@ -31,4 +31,3 @@ export const storeInitialSchemasLocal = async (txn?: Tx): Promise<void> => {
     }
   }
 };
-

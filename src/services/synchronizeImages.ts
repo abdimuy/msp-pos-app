@@ -1,7 +1,7 @@
 import { Imagenes } from './getImageApi';
 import * as FileSystem from 'expo-file-system';
 import { getDB } from '../../app/database/database';
-import { insertImagePathsIfNotExistLocal } from '../services/products/insertImagePathsIfNotExistLocal/insertImagePathsIfNotExistLocal'
+import { insertImagePathsIfNotExistLocal } from './products/insertImagePathsIfNotExistLocal/insertImagePathsIfNotExistLocal';
 import { Alert } from 'react-native';
 
 // Lee todos lo imagenes_id que esten en mi base de datos

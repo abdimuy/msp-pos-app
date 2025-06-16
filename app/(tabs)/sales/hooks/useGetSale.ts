@@ -1,11 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { getSaleDetailsLocal } from '../../../../src/services/sale/getSaleDetailsLocal/getSaleDetailsLocal';
-import { Sale } from '../../../../type/Sale';
+import { SaleWithSavedImages } from '../../../../type/Sale';
 
 export function useGetSale() {
   const { id } = useLocalSearchParams();
-  const [venta, setVenta] = useState<Sale | null>(null);
+  const [venta, setVenta] = useState<SaleWithSavedImages | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +17,7 @@ export function useGetSale() {
       setError(null);
 
       try {
-        const data = await getSaleDetailsLocal(Number(id));
+        const data = await getSaleDetailsLocal(String(id));
         setVenta(data);
       } catch (e: any) {
         setError(e.message || 'Error al cargar los detalles de la venta');

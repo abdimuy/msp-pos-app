@@ -7,7 +7,7 @@ import { getImageApi } from '../src/services/getImageApi';
 import {
   contarImagenesNuevas,
   sincronizarImagenesNuevasPorProducto,
-} from '../src/services/sincronizarImagenes';
+} from '../src/services/synchronizeImages';
 
 export default function Home() {
   const { actualizarDatosProductos, error } = useGetProducts();

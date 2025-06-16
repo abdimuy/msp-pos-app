@@ -7,16 +7,15 @@ export const styles = StyleSheet.create({
   },
   content: { 
     padding: 20, 
-    flex:1
   },
   contenedor: {
-    position: 'absolute',
-    bottom: 20,
+    position: 'relative',
+    top:0,
     left: 0,
     right: 0,
     padding: 16,
-    paddingBottom: 24,
-    marginBottom: 24,
+    zIndex:10,
+    elevation:10,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -60,11 +59,13 @@ export const styles = StyleSheet.create({
     color: '#007BFF',
   },
   scrollView: {
-    marginBottom: 20,
+    marginBottom: 10,
+        height: 100
   },
   thumbWrapper: {
     position: 'relative',
     marginRight: 12,
+    height: 100
   },
   thumbnail: {
     width: 64,
@@ -101,32 +102,6 @@ export const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
-  },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-    justifyContent: 'space-evenly',
-    alignItems: 'flex-end',
-    marginBottom: 30,
-  },
-  button: {
-    padding: 12,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 8,
-    marginBlockEnd: 19
-  },
-  text: {
-    fontSize: 16,
-    color: 'white',
-  },
-  thumbnailContainer: {
-    marginTop: 20,
-    paddingHorizontal: 10,
-  },
-  thumbnailWrapper: {
-    position: 'relative',
-    marginRight: 10,
   },
   deleteIcon: {
     position: 'absolute',
@@ -174,35 +149,42 @@ export const styles = StyleSheet.create({
   right: 0,
   backgroundColor: '#fff',
   justifyContent: 'flex-end',
-  zIndex: 10,
+  zIndex: 100,
+  elevation: 100,
   marginBlockEnd:48
-},
-modalContainer: {
-  backgroundColor: 'rgb(244, 234, 234)',
-  borderTopLeftRadius: 10,
-  borderTopRightRadius: 10,
-  borderEndEndRadius:10,
-  borderEndStartRadius: 10,
-},
-modalOption: {
-  paddingVertical: 14,
-  borderTopWidth: 1,
-  borderTopColor: '#fff'
-},
-modalOptionText: {
-  fontSize: 18,
-  color: '#007BFF',
-  textAlign: 'center',
-},
-modalCancelar: {
-  paddingVertical: 14,
-  marginTop: 10,
-  borderTopWidth: 1,
-  borderColor: '#fff',
-},
-modalCancelarText: {
-  fontSize: 20,
-  color: '#E74C3C',
-  textAlign: 'center',
-},
+  },
+  modalContainer: {
+    backgroundColor: 'rgb(244, 234, 234)',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderEndEndRadius:10,
+    borderEndStartRadius: 10,
+  },
+  modalOption: {
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#fff'
+  },
+  modalOptionText: {
+    fontSize: 18,
+    color: '#007BFF',
+    textAlign: 'center',
+  },
+  modalCancelar: {
+    paddingVertical: 14,
+    marginTop: 10,
+    borderTopWidth: 1,
+    borderColor: '#fff',
+  },
+  modalCancelarText: {
+    fontSize: 20,
+    color: '#E74C3C',
+    textAlign: 'center',
+  },
+  map: {
+    width: '100%',
+    height: 200, // o el alto que desees
+    borderRadius: 15,
+    marginBottom: 20,
+  }
 });

@@ -97,10 +97,12 @@ function ProductoCard({ item }: { item: ProductoConImagenParseado }) {
           <Text numberOfLines={2} style={styles.nombre}>
             {item.ARTICULO}
           </Text>
-          <Text style={styles.stock}>Stock: {item.EXISTENCIAS}</Text>
+          <Text style={styles.stock}>
+            Stock: <Text style={styles.price}>{item.EXISTENCIAS}</Text>
+          </Text>
           {Object.entries(item.PRECIOS).map(([tipo, valor]) => (
             <Text key={tipo} style={styles.stock}>
-              {tipo}: ${Number(valor).toFixed(2)}
+              {tipo}:<Text style={styles.price}>${Number(valor).toFixed(2)}</Text>
             </Text>
           ))}
         </View>
